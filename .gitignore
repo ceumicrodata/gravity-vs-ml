@@ -3,6 +3,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+.DS_Store
+datasets/country_codes.pickle
+datasets/exported_data_list.pickle
+
 # C extensions
 *.so
 
