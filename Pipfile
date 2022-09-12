@@ -8,6 +8,8 @@ torch = "*"
 torch-geometric-temporal = "*"
 pandas = "*"
 networkx = "*"
+dgl = "*"
+ray = {extras = ["tune"], version = "*"}
 
 [dev-packages]
 ipykernel = "*"
