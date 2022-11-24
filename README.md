@@ -1,10 +1,8 @@
-
 # Replication Package for: 
 ## 2022-11-10
 
 
 ## Authors
-
 - Kiss, Olivér
 - [Koren, Miklós](https://koren.mk/)
 - Ruzicska, György
@@ -87,4 +85,3 @@ As in any scientific manuscript, you should have proper references. For instance
 - Department of Elementary and Secondary Education (DESE), 2019. "Student outcomes database [dataset]" *Massachusetts Department of Elementary and Secondary Education (DESE)*. Accessed January 15, 2019.
 - U.S. Bureau of Economic Analysis (BEA). 2016. “Table 30: "Economic Profile by County, 1969-2016.” (accessed Sept 1, 2017).
 - Inglehart, R., C. Haerpfer, A. Moreno, C. Welzel, K. Kizilova, J. Diez-Medrano, M. Lagos, P. Norris, E. Ponarin & B. Puranen et al. (eds.). 2014. World Values Survey: Round Six - Country-Pooled Datafile Version: http://www.worldvaluessurvey.org/WVSDocumentationWV6.jsp. Madrid: JD Systems Institute.
-
