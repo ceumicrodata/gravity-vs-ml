@@ -4,8 +4,8 @@ __pycache__/
 *$py.class
 
 .DS_Store
-datasets/country_codes.pickle
-datasets/exported_data_list.pickle
+Input_datasets/country_codes.pickle
+Input_datasets/exported_data_list.pickle
 
 # C extensions
 *.so
