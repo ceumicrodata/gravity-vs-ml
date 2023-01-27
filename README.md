@@ -25,6 +25,12 @@ CEPII GeoDist (CEPII 2011 and Mayer and Zignago 2011) is available via an [Open 
 #### World Development Indicators
 The World Development Indicators (World Bank 2022) is available with a [CC-BY-4.0 license](https://datacatalog.worldbank.org/search/dataset/0037712). We are sharing the data here in compliance with the license terms.
 
+#### Country codes
+Country codes are fetched from [Data hub](https://datahub.io/core/country-codes) under a [PDDL License](https://opendatacommons.org/licenses/pddl/).
+
+#### Country groups
+Country groups were collected by [GeoDataSource](https://github.com/geodatasource/country-grouping-terminology) and distributed under a [CC BY-SA 4.0 License](https://creativecommons.org/licenses/by-sa/4.0/).
+
 #### US mobility and county adjacencies
 See [here](https://github.com/kiss-oliver/covid-US-spatiotemporal). County adjacencies come from the [US Census Bureau](https://www.census.gov/geographies/reference-files/2010/geo/county-adjacency.html). Mobility data includes county level mobility characteristics from [Google](https://www.google.com/covid19/mobility/).
 
