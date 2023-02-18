@@ -1,4 +1,4 @@
-economy,,gdp,total_population,urban_population
+economy,,gdp,total_population,urban_population(%_of_total)
 ARG,YR1995,348389357874.283,34946110.0,88.164
 ARG,YR1996,367643757074.802,35389362.0,88.366
 ARG,YR1997,397463514160.866,35815971.0,88.564
