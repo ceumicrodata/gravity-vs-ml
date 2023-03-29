@@ -1,0 +1,30 @@
+name: Model Evaluation Workflow
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+jobs:
+  eval_python:
+    name: Model Evaluations
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        id: setup-python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.11'
+      - run: pip install --upgrade pip
+      - run: pip install setuptools
+      - run: curl -sSL https://install.python-poetry.org | python3 -
+      - run: poetry install --no-root
+      - name: Create report file
+        run: cd Evaluation/; poetry run python3 evaluate.py
+      - name: Commit report
+        run: |
+          git config --global user.name 'Automated Model Evaluator'
+          git config --global user.email 'gnn_chapter@noreply.github.com'
+          git add evaluations.csv
+          git commit -m "feat: add automated model evaluations"
+          git push
