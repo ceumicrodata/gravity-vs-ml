@@ -18,7 +18,7 @@ jobs:
       - run: pip install --upgrade pip
       - run: pip install setuptools
       - run: pip install pandas
-      - run: pip install git
+      - run: pip install gitpython
       - name: Create report file
         run: cd Evaluation/; python3 evaluate.py
       - name: Commit report
