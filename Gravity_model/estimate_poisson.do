@@ -14,4 +14,5 @@ forvalues t = `T1'/`T2' {
 
 drop if year < `T1'
 keep iso_o iso_d year import prediction
+rename import target
 export delimited "Gravity_model/prediction.csv", replace
