@@ -15,4 +15,7 @@ foreach X in `nodevars' {
 }
 rename iso_numeric iso_d
 
+* data does not include domestic trade
+drop if iso_o == iso_d
+
 save "temp/trade_sample.dta", replace
