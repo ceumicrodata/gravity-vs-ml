@@ -29,7 +29,7 @@ def r2(predictions: pd.Series, targets: pd.Series) -> float:
 
 
 project_home = pathlib.Path("../")
-result_files = list(str(x) for x in project_home.rglob('*') if 'prediction.csv' in str(x))
+result_files = list(str(x) for x in project_home.rglob('*') if 'prediction' in str(x).split("/")[-1] and '.csv' in str(x))
 print(f"Found {len(result_files)} model result file(s):\n",*[f"{x}\n" for x in result_files])
 
 measure_names = ["MAE", "RMAE", "MSE", "RMSE", "PSEUDOR2"]

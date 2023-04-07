@@ -17,10 +17,10 @@ jobs:
           python-version: '3.11'
       - run: pip install --upgrade pip
       - run: pip install setuptools
-      - run: curl -sSL https://install.python-poetry.org | python3 -
-      - run: poetry install --no-root
+      - run: pip install pandas
+      - run: pip install gitpython
       - name: Create report file
-        run: cd Evaluation/; poetry run python3 evaluate.py
+        run: cd Evaluation/; python3 evaluate.py
       - name: Commit report
         run: |
           git config --global user.name 'Automated Model Evaluator'
