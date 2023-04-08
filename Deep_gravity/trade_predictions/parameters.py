@@ -1,3 +1,7 @@
+from ray import tune
+from torch import nn
+import numpy as np
+
 ##############
 # Dataset params
 ##############
@@ -23,7 +27,7 @@ flows_features=['contig', 'comlang_off', 'comlang_ethno', 'colony',
 
 # Chunk parameters
 chunk_size = 6
-train_periods = 5
+validation_period = 1
 
 # Add lag parameters
 lag_periods = 1
@@ -40,16 +44,28 @@ columns_to_rename = {'Timestamp_target':'year'}
 # TBA: model_type = 'DeepGravity'
 #TBA: prediction_type = 'node' or 'edge'
 
+
+##############
+# Ray Tune params
+##############
+
+config = {
+        "lr": tune.loguniform(1e-4, 1e-1),
+        "batch_size": tune.choice([2, 4, 8, 16]),
+        "dim_hidden": tune.sample_from(lambda _: 2**np.random.randint(2, 6)),
+        "dropout_p": tune.choice([0.25, 0.35, 0.45]),
+        "num_layers": tune.choice([5, 10, 15]),
+    }
+
 ##############
 # Model params
 ##############
-batch_size=10
-epochs=25
-lr=5e-6
+
+epochs=10
 momentum=0.9
-dim_hidden = 64
 seed=1234
 device='cpu'
+loss_fn = nn.MSELoss()
 
 # TBA add mode to only evaluate
 #mode='train'

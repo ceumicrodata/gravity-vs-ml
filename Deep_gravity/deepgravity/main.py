@@ -1,13 +1,16 @@
 import pandas as pd
 import numpy as np
+import os
 import datetime
 import sys
 import tqdm
 
 import random
-import torch.optim as optim
 import torch.utils.data.distributed
-from torch import nn
+import torch
+from ray import tune
+from ray.tune import CLIReporter
+from ray.tune.schedulers import ASHAScheduler
 
 import model_utils
 from data_compiler import FlowDataset
@@ -72,11 +75,13 @@ flow_data_chunked = flow_data.create_chunks(chunk_size=6)
 
 # Create a list of FlowDataset objects
 train_data_chunked = []
+validation_data_chunked = []
 test_data_chunked = []
 
 for flow_data in tqdm.tqdm(flow_data_chunked):
-    train_data, test_data = flow_data.split_train_test(test_period = 1)
+    train_data, validation_data, test_data = flow_data.split_train_validate_test(validation_period = parameters.validation_period)
     train_data_chunked.append(train_data)
+    validation_data_chunked.append(validation_data)
     test_data_chunked.append(test_data)
 
 ###################
@@ -84,27 +89,48 @@ for flow_data in tqdm.tqdm(flow_data_chunked):
 ###################
 
 prediction_list = []
-for chunk in range(len(train_data_chunked)):
-    train_data_loader = torch.utils.data.DataLoader(train_data_chunked[chunk], batch_size=parameters.batch_size)
-    test_data_loader = torch.utils.data.DataLoader(test_data_chunked[chunk], batch_size=parameters.batch_size)
+for chunk in range(len(train_data_chunked[:3])):
+    # Set scheduler
+    scheduler = ASHAScheduler(
+        metric="loss",
+        mode="min",
+        max_t=parameters.epochs,
+        grace_period=1,
+        reduction_factor=2)
+    # Set reporter
+    reporter = CLIReporter(
+            # parameter_columns=["lr", "batch_size", "dim_hidden", "dropout_p", "num_layers"],
+            metric_columns=["loss", "training_iteration"])
+    # Run tuning
+    result = tune.run(
+        tune.with_parameters(model_utils.train_and_validate_deepgravity, train_data_chunked = train_data_chunked,
+                validation_data_chunked = validation_data_chunked, chunk = chunk, loss_fn = parameters.loss_fn),
+        resources_per_trial={"cpu": 4},
+        config=parameters.config,
+        num_samples=10,
+        scheduler=scheduler,
+        progress_reporter=reporter)
+
+    best_trial = result.get_best_trial("loss", "min", "last")
+    print("Best trial config: {}".format(best_trial.config))
+    print("Best trial final validation loss: {}".format(
+        best_trial.last_result["loss"]))
 
     input_dim = train_data_chunked[chunk].get_feature_dim()
+    best_trained_model = DeepGravity(dim_input = input_dim,
+                                    dim_hidden = best_trial.config["dim_hidden"],
+                                    dropout_p = best_trial.config["dropout_p"],
+                                    num_layers = best_trial.config["num_layers"],)
 
-    deep_gravity_model = DeepGravity(dim_input = input_dim,
-                                    dim_hidden = parameters.dim_hidden)
-    
-    optimizer = optim.RMSprop(deep_gravity_model.parameters(), lr=parameters.lr, momentum=parameters.momentum)
+    best_checkpoint = result.get_best_checkpoint(trial=best_trial, metric="loss", mode="min")
+    best_checkpoint_dir = best_checkpoint.to_directory(path=os.path.join(parameters.output_path, "best_checkpoints", "trade", str(chunk), f"checkpoint_{str(datetime.datetime.now()).replace(' ', '_')[:19]}"))
+    model_state, optimizer_state = torch.load(os.path.join(best_checkpoint_dir, "checkpoint"))
+    best_trained_model.load_state_dict(model_state)
 
-    for t in range(parameters.epochs):
-        print(f"Epoch {t+1}\n-------------------------------")
-        model_utils.train(train_data_loader, deep_gravity_model, optimizer)
-        model_utils.test(test_data_loader, deep_gravity_model, test_data_chunked[chunk], loss_fn = None)
-
-    model_utils.test(test_data_loader, deep_gravity_model, test_data_chunked[chunk], loss_fn = None, store_predictions=True)
+    test_data_loader = torch.utils.data.DataLoader(test_data_chunked[chunk], batch_size=4)
+    model_utils.test(test_data_loader, best_trained_model, test_data_chunked[chunk], loss_fn = parameters.loss_fn, store_predictions=True)
+    print("Finished prediction on test set")
     prediction_list.append(test_data_chunked[chunk].compile_predictions(columns_to_rename = parameters.columns_to_rename))
-    print("Done!")
-
-print("Training and prediction was successful!")
 
 ###################
 # Save predictions

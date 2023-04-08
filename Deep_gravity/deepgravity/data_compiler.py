@@ -3,10 +3,9 @@
 ##################################
 
 import torch
-from typing import Any, Callable, Dict, IO, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 import pandas as pd
-from importlib.machinery import SourceFileLoader
 
 class FlowDataset(torch.utils.data.Dataset):
     def __init__(self,
@@ -111,20 +110,23 @@ class FlowDataset(torch.utils.data.Dataset):
                                 on = [self.flow_destination],
                                 suffixes=('', '_target'))
                 data_dict[(id, period)] = data
+            # Add last period with zero target values as test data
+            data = self.data_dict[(id, self.period_list[-1])].copy()
+            data[f'{self.flows_value}_target'] = 0
+            data_dict[(id, self.period_list[-1])] = data
         self.data_dict = data_dict
         self._update_dict_attributes()
 
-    def split_train_test(self,
-                         test_period = 1) -> Tuple['FlowDataset', 'FlowDataset']:
+    def split_train_validate_test(self,
+                                  validation_period = 1) -> Tuple['FlowDataset', 'FlowDataset']:
         
-        train_data = {(id, period): self.data_dict[(id, period)] for id in self.id_list for period in self.period_list[:-test_period]}
-        test_data = {(id, period): self.data_dict[(id, period)] for id in self.id_list for period in self.period_list[-test_period:]}
+        train_data = {(id, period): self.data_dict[(id, period)] for id in self.id_list for period in self.period_list[:-validation_period-1]}
+        validation_data = {(id, period): self.data_dict[(id, period)] for id in self.id_list for period in self.period_list[-validation_period-1:-1]}
+        test_data = {(id, period): self.data_dict[(id, period)] for id in self.id_list for period in self.period_list[-1:]}
 
-        return FlowDataset(columns=self.columns,
-                           unit = [self.flow_origin, self.flows_timestamp],
-                           data_dict = train_data), FlowDataset(columns=self.columns,
-                                                                unit = [self.flow_origin, self.flows_timestamp],
-                                                                data_dict = test_data)
+        return FlowDataset(columns=self.columns, unit = [self.flow_origin, self.flows_timestamp], data_dict = train_data), \
+            FlowDataset(columns=self.columns, unit = [self.flow_origin, self.flows_timestamp], data_dict = validation_data), \
+                FlowDataset(columns=self.columns, unit = [self.flow_origin, self.flows_timestamp], data_dict = test_data)
 
     def get_feature_dim(self) -> int:
         return self.data_dict[self.data_dict_index_mapper[0]].shape[1] - 2
