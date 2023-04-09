@@ -16,6 +16,7 @@ tqdm = "^4.65.0"
 networkx = "^3.0"
 jupyter = "^1.0.0"
 gitpython = "^3.1.31"
+plotly = "^5.14.0"
 
 
 [build-system]
