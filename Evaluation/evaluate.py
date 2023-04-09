@@ -59,7 +59,7 @@ for result_file in result_files:
         measures['path'] = result_file
     if pathlib.Path('../evaluations.csv').is_file():
         pre_existing_results = pd.read_csv("../evaluations.csv")
-        results = pre_existing_results.append(measures, ignore_index=True)
+        results = pd.concat(pre_existing_results, pd.DataFrame(measures))
     else:
         results = pd.DataFrame([measures])
     results.to_csv('../evaluations.csv', index=False)
