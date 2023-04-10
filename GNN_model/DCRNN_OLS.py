@@ -44,8 +44,10 @@ class DCRNNEdgePredictor(torch.nn.Module):
         self.recurrent = DCRNN(in_channels, out_channels, filter_size)
         self.relu = nn.ReLU()
         self.relu2 = nn.ReLU()
-        self.linear = torch.nn.Linear((in_channels+out_channels) * 2+2, 5)
-        self.linear2 = torch.nn.Linear(5, 1)
+        self.relu3 = nn.ReLU()
+        self.linear = torch.nn.Linear((in_channels+out_channels) * 2+3, 5)
+        self.linear2 = torch.nn.Linear(5, 3)
+        self.linear3 = torch.nn.Linear(3, 1)
 
     def forward(
         self, x: torch.Tensor, edge_index: torch.Tensor, edge_weight: torch.Tensor, dist: torch.Tensor, lags
@@ -77,10 +79,12 @@ class DCRNNEdgePredictor(torch.nn.Module):
             ],
             0,
         )
-        stacked = torch.cat([stacked, dist, lags], 1)
+        stacked = torch.cat([stacked, dist, dist**2, lags], 1)
         out = self.linear(stacked)
         out = self.relu(out)
         out = self.linear2(out)
+        out = self.relu3(out)
+        out = self.linear3(out)
         return out
 
 
@@ -259,6 +263,7 @@ class DCRNNEdgeEstimator:
             nodes["urban_population(%_of_total)"] / 100
         )
         nodes["area"] = np.log(nodes["area"])
+        nodes["citynum"] = np.log(nodes["citynum"].fillna(0)+1)
         nodes = nodes.join(
             pd.get_dummies(
                 pd.DataFrame(
@@ -275,7 +280,7 @@ class DCRNNEdgeEstimator:
             "gdp",
             "total_population",
             "urban_population(%_of_total)",
-            "area",
+            "area", 'landlocked', 'citynum'
         ] + [feat for feat in nodes if "continent_" in feat]
         features = []
         for year in tqdm(range(start_year, end_year), "Compiling features"):
@@ -388,6 +393,7 @@ class DCRNNEdgeEstimator:
         nodes["urban_population(%_of_total)"] = (
             nodes["urban_population(%_of_total)"] / 100
         )
+        nodes["citynum"] = np.log(nodes["citynum"].fillna(0)+1)
         nodes["area"] = np.log(nodes["area"])
         nodes = nodes.join(
             pd.get_dummies(
@@ -405,7 +411,7 @@ class DCRNNEdgeEstimator:
             "gdp",
             "total_population",
             "urban_population(%_of_total)",
-            "area",
+            "area", 'landlocked', 'citynum'
         ] + [feat for feat in nodes if "continent_" in feat]
         features = []
         for year in tqdm(prediction_years, "Compiling features"):
