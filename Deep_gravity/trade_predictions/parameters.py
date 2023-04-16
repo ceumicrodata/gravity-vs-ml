@@ -7,7 +7,10 @@ import numpy as np
 ##############
 domain='trade'
 node_path = '../../Output_datasets/Yearly_trade_data_prediction/trade_nodelist.csv'
+node_target_path = ''
 edge_path = '../../Output_datasets/Yearly_trade_data_prediction/trade_edgelist.csv'
+edge_target_path = ''
+chunk_path  = '../../Output_datasets/Yearly_trade_data_prediction/Chunked_merged_data'
 output_path = '../trade_predictions/'
 
 # Node dataset
@@ -16,6 +19,8 @@ node_timestamp='year'
 node_features=['gdp', 'total_population',
                'urban_population(%_of_total)',
                'area', 'dis_int', 'landlocked', 'citynum']
+
+node_targets = []
 
 # Edge dataset
 flow_origin='iso_o'
@@ -26,7 +31,8 @@ flows_features=['contig', 'comlang_off', 'comlang_ethno', 'colony',
                 'comcol', 'curcol', 'col45', 'smctry', 'dist', 'distcap']
 
 # Chunk parameters
-chunk_size = 6
+chunk_size = 5
+window_size = 1
 validation_period = 1
 
 # Add lag parameters
