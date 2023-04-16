@@ -7,8 +7,6 @@ from ray import tune
 
 from deepgravity import DeepGravity
 
-sys.path.append('../trade_predictions')
-import parameters
 
 ########################
 # Function for training
@@ -76,8 +74,10 @@ def validate_model(dataloader, model, loss_fn = None):
 
 def train_and_validate_deepgravity(config,
                              train_data_chunked,
-                             validation_data_chunked, 
+                             validation_data_chunked,
                              chunk,
+                             momentum,
+                             epochs,
                              loss_fn = None,
                              checkpoint_dir=None):
 
@@ -92,15 +92,15 @@ def train_and_validate_deepgravity(config,
                                     dropout_p = config["dropout_p"],
                                     num_layers = config["num_layers"],)
 
-    optimizer = optim.RMSprop(deep_gravity_model.parameters(), lr=config["lr"], momentum=parameters.momentum)
+    optimizer = optim.RMSprop(deep_gravity_model.parameters(), lr=config["lr"], momentum=momentum)
 
     if checkpoint_dir:
         model_state, optimizer_state = torch.load(
             os.path.join("checkpoints", str(chunk), checkpoint_dir, "checkpoint"))
         deep_gravity_model.load_state_dict(model_state)
         optimizer.load_state_dict(optimizer_state)
-    
-    for epoch in range(parameters.epochs):
+
+    for epoch in range(epochs):
         #print(f"Epoch {epoch+1}\n-------------------------------")
         train_model(train_data_loader, deep_gravity_model, optimizer, epoch, loss_fn)
         val_loss = validate_model(validation_data_loader, deep_gravity_model,
@@ -118,8 +118,8 @@ def train_and_validate_deepgravity(config,
 def test(dataloader, model, flow_data, loss_fn = None, store_predictions = False):
     num_batches = len(dataloader)
     batch_size = dataloader.batch_size
-    model.eval()
     test_loss = 0
+    model.eval()
     with torch.no_grad():
         for batch, (X, y) in enumerate(dataloader):
             pred = model(X)
@@ -127,7 +127,7 @@ def test(dataloader, model, flow_data, loss_fn = None, store_predictions = False
                 test_loss += model.loss(pred, y).item()
             else:
                 test_loss += loss_fn(pred, y).item()
-            
+
             if store_predictions:
                 flow_data_keys = list(flow_data.data_dict.keys())[batch_size*batch:batch_size*batch+batch_size]
                 for element in range(len(flow_data_keys)):

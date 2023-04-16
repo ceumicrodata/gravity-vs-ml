@@ -4,6 +4,7 @@ import os
 import datetime
 import sys
 import tqdm
+import glob
 
 import random
 import torch.utils.data.distributed
@@ -16,7 +17,7 @@ import model_utils
 from data_compiler import FlowDataset
 from deepgravity import DeepGravity
 
-sys.path.append('../google_mobility_predictions/')
+sys.path.append('../trade_predictions/')
 import parameters
 
 # random seeds
@@ -26,55 +27,12 @@ random.seed(parameters.seed)
 
 torch_device = torch.device("cpu")
 
-##############
-# Load data
-##############
-
-nodes = pd.read_csv(parameters.node_path)
-if parameters.domain=='Google':
-    node_targets = pd.read_csv(parameters.node_target_path)
-    nodes = pd.merge(nodes, node_targets, on=[parameters.node_id], how='inner')
-
-nodes_columns = parameters.node_features + parameters.node_targets + [parameters.node_id] + [parameters.node_timestamp]
-nodes_columns = [i for i in nodes_columns if i != ""]
-nodes_columns = nodes_columns
-nodes = nodes[nodes_columns]
-
-if parameters.domain=='Google':
-    # Rename and melt
-    nodes.rename(columns={parameters.node_id: parameters.flow_origin}, inplace=True)
-
-    nodes = pd.melt(nodes, id_vars=parameters.node_features+[parameters.flow_origin]+[parameters.node_timestamp],
-                            value_vars=parameters.node_targets, var_name='destination', value_name='Value')
-
-edges = pd.read_csv(parameters.edge_path)
-if parameters.domain=="GeoDS":
-    edge_targets = pd.read_csv(parameters.edge_target_path)
-    edges = pd.merge(edges, edge_targets, on=[parameters.flow_origin, parameters.flow_destination], how='inner')
-
-edges_columns = parameters.flows_features + [parameters.flow_origin] + \
-    [parameters.flow_destination] + [parameters.flows_timestamp] + \
-        [parameters.flows_value]
-edges_columns = [i for i in edges_columns if i != ""]
-edges = edges[edges_columns]
-
 if parameters.domain=='Google':
     unit = [parameters.flow_origin, parameters.node_timestamp]
     target_value = 'Value'
 else:
     unit = [parameters.flow_origin, parameters.flows_timestamp]
     target_value = parameters.flows_value
-
-##############
-# Initial cleaning
-##############
-
-nodes = nodes.fillna(0)
-edges = edges.fillna(0)
-
-##############
-# Create data objects
-##############
 
 columns = {'node_id': parameters.node_id,
            'node_timestamp': parameters.node_timestamp,
@@ -83,30 +41,40 @@ columns = {'node_id': parameters.node_id,
            'flows_timestamp': parameters.flows_timestamp,
            'target_value':target_value}
 
-flow_data = FlowDataset(domain=parameters.domain,
-                        columns=columns,
-                        unit = unit,
-                        nodes=nodes,
-                        edges=edges,)
-
-# Create a list of FlowDataset objects
-flow_data_chunked = flow_data.create_chunks(chunk_size=parameters.chunk_size, window_size=parameters.window_size)
-
-# Add past values to each chunk
-[flow_chunk.add_past_values(periods=parameters.lag_periods,
-                            edge_columns = parameters.time_dependent_edge_columns,
-                            node_columns = parameters.time_dependent_node_columns) for flow_chunk in tqdm.tqdm(flow_data_chunked)]
-
-# Add target to each chunk
-[flow_chunk.add_target_values() for flow_chunk in tqdm.tqdm(flow_data_chunked)]
-
-# Create a list of FlowDataset objects
 train_data_chunked = []
 validation_data_chunked = []
 test_data_chunked = []
 
-for flow_data in tqdm.tqdm(flow_data_chunked):
-    train_data, validation_data, test_data = flow_data.split_train_validate_test(validation_period = parameters.validation_period)
+##############
+# Load data
+##############
+
+all_files = glob.glob(os.path.join(parameters.chunk_path , "*.csv"))
+
+for chunk_file in tqdm.tqdm(all_files):
+    nodes_edges = pd.read_csv(chunk_file, index_col=None, header=0)
+
+    ##############
+    # Initial cleaning
+    ##############
+    nodes_edges = nodes_edges.fillna(0)
+
+    ##############
+    # Create data objects
+    ##############
+    flow_chunk = FlowDataset(domain=parameters.domain,
+                            columns=columns,
+                            unit = unit,
+                            nodes_edges=nodes_edges)
+
+    flow_chunk.add_past_values(periods=parameters.lag_periods,
+                            edge_columns = parameters.time_dependent_edge_columns,
+                            node_columns = parameters.time_dependent_node_columns)
+
+    flow_chunk.add_target_values()
+
+    # Create a list of FlowDataset objects
+    train_data, validation_data, test_data = flow_chunk.split_train_validate_test(validation_period = parameters.validation_period)
     train_data_chunked.append(train_data)
     validation_data_chunked.append(validation_data)
     test_data_chunked.append(test_data)
@@ -164,6 +132,3 @@ for chunk in range(len(train_data_chunked[:3])):
 ###################
 
 pd.concat(prediction_list, axis=0).to_csv(f"{parameters.output_path}/prediction_{str(datetime.datetime.now()).replace(' ', '_')[:19]}.csv")
-
-
-
