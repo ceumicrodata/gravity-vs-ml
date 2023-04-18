@@ -116,7 +116,7 @@ for flow_data in tqdm.tqdm(flow_data_chunked):
 ###################
 
 prediction_list = []
-for chunk in range(len(train_data_chunked[:3])):
+for chunk in range(len(train_data_chunked)):
     # Set scheduler
     scheduler = ASHAScheduler(
         metric="loss",
@@ -131,7 +131,8 @@ for chunk in range(len(train_data_chunked[:3])):
     # Run tuning
     result = tune.run(
         tune.with_parameters(model_utils.train_and_validate_deepgravity, train_data_chunked = train_data_chunked,
-                validation_data_chunked = validation_data_chunked, chunk = chunk, loss_fn = parameters.loss_fn),
+                validation_data_chunked = validation_data_chunked, chunk = chunk, momentum = parameters.momentum,
+                epochs = parameters.epochs,loss_fn = parameters.loss_fn),
         resources_per_trial={"cpu": 4},
         config=parameters.config,
         num_samples=10,
@@ -164,6 +165,3 @@ for chunk in range(len(train_data_chunked[:3])):
 ###################
 
 pd.concat(prediction_list, axis=0).to_csv(f"{parameters.output_path}/prediction_{str(datetime.datetime.now()).replace(' ', '_')[:19]}.csv")
-
-
-

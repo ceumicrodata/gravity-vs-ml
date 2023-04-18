@@ -17,7 +17,7 @@ import model_utils
 from data_compiler import FlowDataset
 from deepgravity import DeepGravity
 
-sys.path.append('../trade_predictions/')
+sys.path.append('../google_mobility_predictions/')
 import parameters
 
 # random seeds
@@ -53,6 +53,7 @@ all_files = glob.glob(os.path.join(parameters.chunk_path , "*.csv"))
 
 for chunk_file in tqdm.tqdm(all_files):
     nodes_edges = pd.read_csv(chunk_file, index_col=None, header=0)
+    nodes_edges.drop(['date','start_date'], errors='ignore', axis=1, inplace=True)
 
     ##############
     # Initial cleaning
@@ -84,7 +85,7 @@ for chunk_file in tqdm.tqdm(all_files):
 ###################
 
 prediction_list = []
-for chunk in range(len(train_data_chunked[:3])):
+for chunk in range(len(train_data_chunked)):
     # Set scheduler
     scheduler = ASHAScheduler(
         metric="loss",
@@ -99,12 +100,14 @@ for chunk in range(len(train_data_chunked[:3])):
     # Run tuning
     result = tune.run(
         tune.with_parameters(model_utils.train_and_validate_deepgravity, train_data_chunked = train_data_chunked,
-                validation_data_chunked = validation_data_chunked, chunk = chunk, loss_fn = parameters.loss_fn),
+                validation_data_chunked = validation_data_chunked, chunk = chunk, momentum = parameters.momentum,
+                epochs = parameters.epochs,loss_fn = parameters.loss_fn),
         resources_per_trial={"cpu": 4},
         config=parameters.config,
         num_samples=10,
         scheduler=scheduler,
-        progress_reporter=reporter)
+        progress_reporter=reporter,
+        reuse_actors=False)
 
     best_trial = result.get_best_trial("loss", "min", "last")
     print("Best trial config: {}".format(best_trial.config))
@@ -118,7 +121,7 @@ for chunk in range(len(train_data_chunked[:3])):
                                     num_layers = best_trial.config["num_layers"],)
 
     best_checkpoint = result.get_best_checkpoint(trial=best_trial, metric="loss", mode="min")
-    best_checkpoint_dir = best_checkpoint.to_directory(path=os.path.join(parameters.output_path, "best_checkpoints", "trade", str(chunk), f"checkpoint_{str(datetime.datetime.now()).replace(' ', '_')[:19]}"))
+    best_checkpoint_dir = best_checkpoint.to_directory(path=os.path.join(parameters.output_path, "best_checkpoints", parameters.domain, str(chunk), f"checkpoint_{str(datetime.datetime.now()).replace(' ', '_')[:19]}"))
     model_state, optimizer_state = torch.load(os.path.join(best_checkpoint_dir, "checkpoint"))
     best_trained_model.load_state_dict(model_state)
 

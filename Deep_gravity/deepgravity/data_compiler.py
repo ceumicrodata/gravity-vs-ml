@@ -44,10 +44,10 @@ class FlowDataset(torch.utils.data.Dataset):
 
     def _merge_nodes_edges(self, nodes:pd.DataFrame, edges:pd.DataFrame
                            ) -> pd.DataFrame:
-        
+
         nodes.rename(columns={self.node_id: self.flow_origin, self.node_timestamp: self.flows_timestamp}, inplace=True)
         nodes[self.flow_destination] = nodes[self.flow_origin]
-        
+
         if (self.node_timestamp!='') & (self.flows_timestamp!=''):
             origin_merge_columns = [self.flow_origin, self.flows_timestamp]
             destination_merge_columns = [self.flow_destination, self.flows_timestamp]
@@ -61,10 +61,10 @@ class FlowDataset(torch.utils.data.Dataset):
 
     def _to_dict(self, unit:list) -> dict[str, pd.DataFrame]:
 
-        if self.domain=="Google":
-            merged_nodes_edges = self.nodes
-        elif isinstance(self.nodes_edges, pd.DataFrame):
+        if isinstance(self.nodes_edges, pd.DataFrame):
             merged_nodes_edges = self.nodes_edges
+        elif self.domain=="Google":
+            merged_nodes_edges = self.nodes
         else:
             merged_nodes_edges = self._merge_nodes_edges(self.nodes, self.edges)
         merged_nodes_edges.set_index(unit, inplace=True)
@@ -92,13 +92,13 @@ class FlowDataset(torch.utils.data.Dataset):
                         data_dict = chunk_data)
             chunk_list.append(chunk_data)
         return chunk_list
-    
+
     def add_past_values(self,
                         edge_columns: list,
                         node_columns: list,
                         periods: int =1) -> None:
-        
-        node_columns = [i+'_o' for i in node_columns] + [i+'_d' for i in node_columns] 
+
+        node_columns = [i+'_o' for i in node_columns] + [i+'_d' for i in node_columns]
         data_dict = {}
         for id in self.id_list:
             for period in self.period_list[periods:]:
@@ -135,7 +135,7 @@ class FlowDataset(torch.utils.data.Dataset):
 
     def split_train_validate_test(self,
                                   validation_period = 1) -> Tuple['FlowDataset', 'FlowDataset']:
-        
+
         train_data = {(id, period): self.data_dict[(id, period)] for id in self.id_list for period in self.period_list[:-validation_period-1]}
         validation_data = {(id, period): self.data_dict[(id, period)] for id in self.id_list for period in self.period_list[-validation_period-1:-1]}
         test_data = {(id, period): self.data_dict[(id, period)] for id in self.id_list for period in self.period_list[-1:]}
@@ -146,7 +146,7 @@ class FlowDataset(torch.utils.data.Dataset):
 
     def get_feature_dim(self) -> int:
         return self.data_dict[self.data_dict_index_mapper[0]].shape[1] - 2
-    
+
     #def get_features_labels(self) -> None:
 
     def compile_predictions(self, columns_to_rename: Dict[str, str] = {}) -> pd.DataFrame:
@@ -159,7 +159,7 @@ class FlowDataset(torch.utils.data.Dataset):
 
         predicted_data = pd.concat(prediction_list, axis=0)
         predicted_data.rename(columns=dict({self.target_value +'_target':'target'}, **columns_to_rename), inplace=True)
-        return predicted_data[['year','target','iso_o','iso_d','prediction']]
+        return predicted_data[['year','target', self.flow_origin, self.flow_destination,'prediction']]
 
     def __len__(self) -> int:
         return len(self.data_dict.keys())
@@ -171,6 +171,5 @@ class FlowDataset(torch.utils.data.Dataset):
 
         target = torch.from_numpy(np.swapaxes(np.array([target]),0,1)).float()
         features = torch.from_numpy(np.array(features)).float()
-                                  
-        return features, target
 
+        return features, target
