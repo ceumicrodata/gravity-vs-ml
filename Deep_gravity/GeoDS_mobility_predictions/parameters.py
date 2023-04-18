@@ -44,7 +44,7 @@ time_dependent_edge_columns = ['pop_flows', 'visitor_flows']
 time_dependent_node_columns = []
 
 # Rename columns for final output
-columns_to_rename = {'Timeline_target':'year'}
+columns_to_rename = {'Timestamp_target':'year'}
 
 ##############
 # Global settings
