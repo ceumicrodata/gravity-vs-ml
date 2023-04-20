@@ -40,23 +40,34 @@ measure_names = ["MAE", "RMAE", "MSE", "RMSE", "PSEUDOR2", "CommonPartOfCommuter
 repo = git.Repo(search_parent_directories=True)
 sha = repo.head.object.hexsha
 
-for result_file in result_files:
+# Separate result files
+google = [f for f in result_files if 'google' in f.lower()]
+geods = [f for f in result_files if 'geods' in f.lower()]
+trade = [f for f in result_files if 'trade' in f.lower()]
+
+# Evaluate trade result files
+trade_data = pd.read_csv("../Output_datasets/Yearly_trade_data_prediction/trade_edgelist.csv")
+trade_data = trade_data.rename(columns={"Value":"target", "Period":"year"})
+for result_file in trade:
+    print(f'Processing {result_file}')
+    results = pd.read_csv(result_file)
+    if 'year' not in results or 'iso_d' not in results or 'iso_o' not in results or 'prediction' not in results:
+        warnings.warn(f'{result_file} has missing columns, skipping.')
+        continue
+    if not results.shape[0]==146200:
+        warnings.warn(f'{result_file} has incorrect number of records, skipping.')
+        continue
     try:
-        predictions = pd.read_csv(result_file).prediction
-        targets = pd.read_csv(result_file).target
+        results = results[[col for col in results if col!='target']].merge(trade_data[['year', 'iso_o', 'iso_d', 'target']], how='left')
+        assert results.shape[0]==146200
+        predictions = results.prediction
+        targets = results.target
         measures = dict(zip(measure_names,(mae(predictions,targets), rmae(predictions,targets), mse(predictions, targets), rmse(predictions, targets), r2(predictions, targets), cpc(predictions,targets))))
         measures['sha'] = sha
         measures['path'] = result_file
-    except AttributeError:
-        warnings.warn(f"Incorrect structure found in {result_file}, nans will be reported")
-        measures = dict(zip(measure_names,(np.nan, np.nan, np.nan, np.nan, np.nan)))
-        measures['sha'] = sha
-        measures['path'] = result_file
     except:
-        warnings.warn(f"Unhandled error when processing {result_file}, nans will be reported")
-        measures = dict(zip(measure_names, (np.nan, np.nan, np.nan, np.nan, np.nan)))
-        measures['sha'] = sha
-        measures['path'] = result_file
+        warnings.warn(f"Unhandled error when processing {result_file}, skipping")
+        continue
     if pathlib.Path('../evaluations.csv').is_file():
         pre_existing_results = pd.read_csv("../evaluations.csv")
         results = pd.concat([pre_existing_results, pd.DataFrame([measures])])
