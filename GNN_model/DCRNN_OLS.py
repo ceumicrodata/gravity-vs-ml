@@ -45,12 +45,17 @@ class DCRNNEdgePredictor(torch.nn.Module):
         self.relu = nn.ReLU()
         self.relu2 = nn.ReLU()
         self.relu3 = nn.ReLU()
-        self.linear = torch.nn.Linear((in_channels+out_channels) * 2+3, 5)
+        self.linear = torch.nn.Linear((in_channels + out_channels) * 2 + 3, 5)
         self.linear2 = torch.nn.Linear(5, 3)
         self.linear3 = torch.nn.Linear(3, 1)
 
     def forward(
-        self, x: torch.Tensor, edge_index: torch.Tensor, edge_weight: torch.Tensor, dist: torch.Tensor, lags
+        self,
+        x: torch.Tensor,
+        edge_index: torch.Tensor,
+        edge_weight: torch.Tensor,
+        dist: torch.Tensor,
+        lags,
     ) -> torch.Tensor:
         """
         Perform a forward pass
@@ -73,7 +78,11 @@ class DCRNNEdgePredictor(torch.nn.Module):
         stacked = torch.cat(
             [
                 torch.cat(
-                    [torch.cat([out[[i]] for _ in range(out.size()[0])], 0), out], 1
+                    [
+                        torch.cat([out[[i]] for _ in range(out.size()[0] - 1)], 0),
+                        out[[x for x in range(out.size()[0]) if x != i]],
+                    ],
+                    1,
                 )
                 for i in range(out.size()[0])
             ],
@@ -235,14 +244,15 @@ class DCRNNEdgeEstimator:
         nodes = nodes.copy()
         edge_subset = edges[edges.Period.isin(range(start_year, end_year + 1))].copy()
         edge_subset["weight"] = 1 / np.log(edge_subset.distcap)
-        assert edge_subset.shape[0] / edge_subset.iso_d.nunique() ** 2 == len(
-            range(start_year, end_year + 1)
-        )
         self.state.id_transformer = self.create_node_id_transformers(
             nodes, "iso_numeric"
         )
         edge_subset_single_year = edge_subset[edge_subset.Period == start_year].copy()
-        edge_subset_single_year = edge_subset_single_year.groupby('iso_o').apply(lambda x: x.sort_values('distcap').head(5)).copy()
+        edge_subset_single_year = (
+            edge_subset_single_year.groupby("iso_o")
+            .apply(lambda x: x.sort_values("distcap").head(5))
+            .copy()
+        )
         edge_subset_single_year["source"] = edge_subset_single_year.iso_o.map(
             lambda id: self.state.id_transformer.raw_to_nx[id]
         )
@@ -263,7 +273,7 @@ class DCRNNEdgeEstimator:
             nodes["urban_population(%_of_total)"] / 100
         )
         nodes["area"] = np.log(nodes["area"])
-        nodes["citynum"] = np.log(nodes["citynum"].fillna(0)+1)
+        nodes["citynum"] = np.log(nodes["citynum"].fillna(0) + 1)
         nodes = nodes.join(
             pd.get_dummies(
                 pd.DataFrame(
@@ -280,7 +290,9 @@ class DCRNNEdgeEstimator:
             "gdp",
             "total_population",
             "urban_population(%_of_total)",
-            "area", 'landlocked', 'citynum'
+            "area",
+            "landlocked",
+            "citynum",
         ] + [feat for feat in nodes if "continent_" in feat]
         features = []
         for year in tqdm(range(start_year, end_year), "Compiling features"):
@@ -315,60 +327,67 @@ class DCRNNEdgeEstimator:
             yearly_lag = []
             for origin in self.state.id_transformer.nx_to_raw.keys():
                 for destination in self.state.id_transformer.nx_to_raw.keys():
-                    yearly_targets.append(
-                        target_subset.loc[
-                            (
+                    if origin != destination:
+                        yearly_targets.append(
+                            target_subset.loc[
                                 (
-                                    target_subset.iso_o
-                                    == self.state.id_transformer.nx_to_raw[origin]
-                                )
-                                & (
-                                    target_subset.iso_d
-                                    == self.state.id_transformer.nx_to_raw[destination]
-                                )
-                                & (target_subset.Period == year)
-                            ),
-                            "Value",
-                        ].values[0]
-                    )
-                    yearly_dist.append(
-                        target_subset.loc[
-                            (
                                     (
-                                            target_subset.iso_o
-                                            == self.state.id_transformer.nx_to_raw[origin]
+                                        target_subset.iso_o
+                                        == self.state.id_transformer.nx_to_raw[origin]
                                     )
                                     & (
-                                            target_subset.iso_d
-                                            == self.state.id_transformer.nx_to_raw[destination]
+                                        target_subset.iso_d
+                                        == self.state.id_transformer.nx_to_raw[
+                                            destination
+                                        ]
                                     )
                                     & (target_subset.Period == year)
-                            ),
-                            "weight",
-                        ].values[0]
-                    )
-                    yearly_lag.append(
-                        target_subset.loc[
-                            (
+                                ),
+                                "Value",
+                            ].values[0]
+                        )
+                        yearly_dist.append(
+                            target_subset.loc[
+                                (
                                     (
-                                            target_subset.iso_o
-                                            == self.state.id_transformer.nx_to_raw[origin]
+                                        target_subset.iso_o
+                                        == self.state.id_transformer.nx_to_raw[origin]
                                     )
                                     & (
-                                            target_subset.iso_d
-                                            == self.state.id_transformer.nx_to_raw[destination]
+                                        target_subset.iso_d
+                                        == self.state.id_transformer.nx_to_raw[
+                                            destination
+                                        ]
                                     )
-                                    & (target_subset.Period == year-1)
-                            ),
-                            "Value",
-                        ].values[0]
-                    )
+                                    & (target_subset.Period == year)
+                                ),
+                                "weight",
+                            ].values[0]
+                        )
+                        yearly_lag.append(
+                            target_subset.loc[
+                                (
+                                    (
+                                        target_subset.iso_o
+                                        == self.state.id_transformer.nx_to_raw[origin]
+                                    )
+                                    & (
+                                        target_subset.iso_d
+                                        == self.state.id_transformer.nx_to_raw[
+                                            destination
+                                        ]
+                                    )
+                                    & (target_subset.Period == year - 1)
+                                ),
+                                "Value",
+                            ].values[0]
+                        )
             targets.append(yearly_targets)
             dist.append(yearly_dist)
             lags.append(yearly_lag)
 
         targets = np.array(targets)
-        dist=torch.Tensor(np.array(dist[0]).reshape(-1, 1))
+        dist = torch.Tensor(np.array(dist[0]).reshape(-1, 1))
         self.edges = edges
         self.weights = weights
 
@@ -379,7 +398,10 @@ class DCRNNEdgeEstimator:
     ) -> StaticGraphTemporalSignal:
         """Method for generating PTGT data iterators for trade prediction"""
         nodes = nodes.copy()
-        edge_subset = edges[edges.Period.isin(prediction_years)|edges.Period.isin([x-1 for x in prediction_years])].copy()
+        edge_subset = edges[
+            edges.Period.isin(prediction_years)
+            | edges.Period.isin([x - 1 for x in prediction_years])
+        ].copy()
         edge_subset["weight"] = 1 / np.log(edge_subset.distcap)
         edge_subset["source"] = edge_subset.iso_o.map(
             lambda id: self.state.id_transformer.raw_to_nx[id]
@@ -393,7 +415,7 @@ class DCRNNEdgeEstimator:
         nodes["urban_population(%_of_total)"] = (
             nodes["urban_population(%_of_total)"] / 100
         )
-        nodes["citynum"] = np.log(nodes["citynum"].fillna(0)+1)
+        nodes["citynum"] = np.log(nodes["citynum"].fillna(0) + 1)
         nodes["area"] = np.log(nodes["area"])
         nodes = nodes.join(
             pd.get_dummies(
@@ -411,7 +433,9 @@ class DCRNNEdgeEstimator:
             "gdp",
             "total_population",
             "urban_population(%_of_total)",
-            "area", 'landlocked', 'citynum'
+            "area",
+            "landlocked",
+            "citynum",
         ] + [feat for feat in nodes if "continent_" in feat]
         features = []
         for year in tqdm(prediction_years, "Compiling features"):
@@ -444,60 +468,67 @@ class DCRNNEdgeEstimator:
             yearly_lag = []
             for origin in self.state.id_transformer.nx_to_raw.keys():
                 for destination in self.state.id_transformer.nx_to_raw.keys():
-                    yearly_targets.append(
-                        target_subset.loc[
-                            (
+                    if origin != destination:
+                        yearly_targets.append(
+                            target_subset.loc[
                                 (
-                                    target_subset.iso_o
-                                    == self.state.id_transformer.nx_to_raw[origin]
-                                )
-                                & (
-                                    target_subset.iso_d
-                                    == self.state.id_transformer.nx_to_raw[destination]
-                                )
-                                & (target_subset.Period == year)
-                            ),
-                            "Value",
-                        ].values[0]
-                    )
-                    yearly_dist.append(
-                        target_subset.loc[
-                            (
                                     (
-                                            target_subset.iso_o
-                                            == self.state.id_transformer.nx_to_raw[origin]
+                                        target_subset.iso_o
+                                        == self.state.id_transformer.nx_to_raw[origin]
                                     )
                                     & (
-                                            target_subset.iso_d
-                                            == self.state.id_transformer.nx_to_raw[destination]
+                                        target_subset.iso_d
+                                        == self.state.id_transformer.nx_to_raw[
+                                            destination
+                                        ]
                                     )
                                     & (target_subset.Period == year)
-                            ),
-                            "weight",
-                        ].values[0]
-                    )
-                    yearly_lag.append(
-                        target_subset.loc[
-                            (
+                                ),
+                                "Value",
+                            ].values[0]
+                        )
+                        yearly_dist.append(
+                            target_subset.loc[
+                                (
                                     (
-                                            target_subset.iso_o
-                                            == self.state.id_transformer.nx_to_raw[origin]
+                                        target_subset.iso_o
+                                        == self.state.id_transformer.nx_to_raw[origin]
                                     )
                                     & (
-                                            target_subset.iso_d
-                                            == self.state.id_transformer.nx_to_raw[destination]
+                                        target_subset.iso_d
+                                        == self.state.id_transformer.nx_to_raw[
+                                            destination
+                                        ]
                                     )
-                                    & (target_subset.Period == year-1)
-                            ),
-                            "Value",
-                        ].values[0]
-                    )
+                                    & (target_subset.Period == year)
+                                ),
+                                "weight",
+                            ].values[0]
+                        )
+                        yearly_lag.append(
+                            target_subset.loc[
+                                (
+                                    (
+                                        target_subset.iso_o
+                                        == self.state.id_transformer.nx_to_raw[origin]
+                                    )
+                                    & (
+                                        target_subset.iso_d
+                                        == self.state.id_transformer.nx_to_raw[
+                                            destination
+                                        ]
+                                    )
+                                    & (target_subset.Period == year - 1)
+                                ),
+                                "Value",
+                            ].values[0]
+                        )
             targets.append(yearly_targets)
             dist.append(yearly_dist)
             lags.append(yearly_lag)
 
         targets = np.array(targets)
-        dist=torch.Tensor(np.array(dist[0]).reshape(-1, 1))
+        dist = torch.Tensor(np.array(dist[0]).reshape(-1, 1))
 
         edges = self.edges
         weights = self.weights
@@ -545,7 +576,7 @@ class DCRNNEdgeEstimator:
                         snapshot.edge_index,
                         snapshot.edge_attr,
                         dist,
-                        torch.Tensor(np.array(lags[i]).reshape(-1,1))
+                        torch.Tensor(np.array(lags[i]).reshape(-1, 1)),
                     )
                     loss = loss + criterion(torch.flatten(y_hat), snapshot.y)
                     periods += 1
@@ -612,7 +643,9 @@ class DCRNNEdgeEstimator:
         """
 
         if data_type == "trade":
-            transformed_data, dist, lags = self.trade_data_prediction_transformer(*raw_data)
+            transformed_data, dist, lags = self.trade_data_prediction_transformer(
+                *raw_data
+            )
 
         self.state.model.eval()
         predictions = []
@@ -622,7 +655,7 @@ class DCRNNEdgeEstimator:
                 snapshot.edge_index,
                 snapshot.edge_attr,
                 dist,
-                torch.Tensor(np.array(lags[i]).reshape(-1,1))
+                torch.Tensor(np.array(lags[i]).reshape(-1, 1)),
             )
             predictions.append(y_hat)
         return predictions
@@ -641,12 +674,16 @@ class DCRNNEdgeEstimator:
                     "origin": [
                         self.state.id_transformer.nx_to_raw[i]
                         for i in self.state.id_transformer.nx_to_raw.keys()
-                        for _ in range(len(self.state.id_transformer.nx_to_raw.keys()))
+                        for _ in range(
+                            len(self.state.id_transformer.nx_to_raw.keys()) - 1
+                        )
                     ],
                     "destination": [
                         self.state.id_transformer.nx_to_raw[i]
-                        for _ in range(len(self.state.id_transformer.nx_to_raw.keys()))
+                        for j in range(len(self.state.id_transformer.nx_to_raw.keys()))
                         for i in self.state.id_transformer.nx_to_raw.keys()
+                        if self.state.id_transformer.nx_to_raw[i]
+                        != self.state.id_transformer.nx_to_raw[j]
                     ],
                 }
             )
