@@ -1,11 +1,9 @@
-DATA := Output_datasets/Yearly_trade_data_prediction
+DATA := Output_datasets/Yearly_trade_data_prediction/Chunked_merged_data
+CHUNKS := $(patsubst $(DATA)/%.csv,%,$(wildcard $(DATA)/????-????.csv))
 STATA := stata -b
 
-Gravity_model/prediction.csv: Gravity_model/estimate_poisson.do temp/trade_analysis.dta
-	$(STATA) $<
-temp/trade_analysis.dta: Gravity_model/select_features.do temp/trade_sample.dta
-	$(STATA) $<
-temp/trade_sample.dta: Gravity_model/create_sample.do temp/trade_nodelist.dta temp/trade_edgelist.dta
-	$(STATA) $<
-temp/trade_%list.dta: Gravity_model/read_%s.do $(DATA)/trade_%list.csv
+all: $(foreach chunk,$(CHUNKS),Gravity_model/prediction_$(chunk).csv)
+Gravity_model/prediction_%.csv: Gravity_model/estimate_poisson.do temp/trade_%.dta
+	$(STATA) $^ $@
+temp/trade_%.dta: Gravity_model/read.do $(DATA)/%.csv
 	$(STATA) $^ $@
