@@ -58,20 +58,20 @@ columns_to_rename = {'Timestamp_target':'year'}
 config = {
         "lr": tune.loguniform(1e-4, 1e-1),
         "batch_size": tune.choice([2, 4, 8, 16]),
-        "dim_hidden": tune.sample_from(lambda _: 2**np.random.randint(2, 6)),
+        "dim_hidden": tune.sample_from(lambda _: 2**np.random.randint(1, 4)),
         "dropout_p": tune.choice([0.25, 0.35, 0.45]),
-        "num_layers": tune.choice([5, 10, 15]),
+        "num_layers": tune.choice([2, 5, 10]),
     }
 
 ##############
 # Model params
 ##############
 
-epochs=10
+epochs=500
 momentum=0.9
 seed=1234
 device='cpu'
-loss_fn = nn.MSELoss()
+loss_fn = nn.L1Loss()
 
 # TBA add mode to only evaluate
 #mode='train'
