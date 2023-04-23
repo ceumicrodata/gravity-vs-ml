@@ -224,8 +224,8 @@
 222,2017,1856804594.29617,4996741.0,40.98,CF,140,Central African Republic,Centrafricaine (la République),622984,296.87405,1.0,Africa,25.0,French,,,Gbaya,Sango,,,French,,,,FRA,,,,,,,CAF,140
 223,2018,1927167157.0247,5094780.0,41.364,CF,140,Central African Republic,Centrafricaine (la République),622984,296.87405,1.0,Africa,25.0,French,,,Gbaya,Sango,,,French,,,,FRA,,,,,,,CAF,140
 224,2019,1986909338.89246,5209324.0,41.77,CF,140,Central African Republic,Centrafricaine (la République),622984,296.87405,1.0,Africa,25.0,French,,,Gbaya,Sango,,,French,,,,FRA,,,,,,,CAF,140
-225,1995,,29302311.0,77.675,CA,124,Canada,Canada,9976139,1187.9962,0.0,America,25.0,English,French,,English,French,,,,,,,GBR,FRA,,,,,,CAN,124
-226,1996,,29610218.0,77.951,CA,124,Canada,Canada,9976139,1187.9962,0.0,America,25.0,English,French,,English,French,,,,,,,GBR,FRA,,,,,,CAN,124
+225,1995,1012649704327.9,29302311.0,77.675,CA,124,Canada,Canada,9976139,1187.9962,0.0,America,25.0,English,French,,English,French,,,,,,,GBR,FRA,,,,,,CAN,124
+226,1996,1012649704327.9,29610218.0,77.951,CA,124,Canada,Canada,9976139,1187.9962,0.0,America,25.0,English,French,,English,French,,,,,,,GBR,FRA,,,,,,CAN,124
 227,1997,1012649704327.9,29905948.0,78.34,CA,124,Canada,Canada,9976139,1187.9962,0.0,America,25.0,English,French,,English,French,,,,,,,GBR,FRA,,,,,,CAN,124
 228,1998,1052104074305.43,30155173.0,78.724,CA,124,Canada,Canada,9976139,1187.9962,0.0,America,25.0,English,French,,English,French,,,,,,,GBR,FRA,,,,,,CAN,124
 229,1999,1106423298897.52,30401286.0,79.103,CA,124,Canada,Canada,9976139,1187.9962,0.0,America,25.0,English,French,,English,French,,,,,,,GBR,FRA,,,,,,CAN,124
@@ -1174,31 +1174,31 @@
 1172,2017,28833322008.4414,1942248.0,68.075,LV,428,Latvia,Lettonie,64589,95.59013,0.0,Europe,25.0,Latvian,,,Latvian,,,,,,,,RUS,,,,SWE,,,LVA,428
 1173,2018,29984306271.8922,1927174.0,68.142,LV,428,Latvia,Lettonie,64589,95.59013,0.0,Europe,25.0,Latvian,,,Latvian,,,,,,,,RUS,,,,SWE,,,LVA,428
 1174,2019,30754814155.864,1913822.0,68.222,LV,428,Latvia,Lettonie,64589,95.59013,0.0,Europe,25.0,Latvian,,,Latvian,,,,,,,,RUS,,,,SWE,,,LVA,428
-1175,1995,13978346332.6819,396641.0,99.91,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
-1176,1996,13919739805.0336,404297.0,99.98,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
-1177,1997,13880783701.3615,411700.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
-1178,1998,13246339310.8786,418776.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
-1179,1999,12933886078.181,425518.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
-1180,2000,13677154746.4737,431896.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
-1181,2001,14072231691.6793,439122.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
-1182,2002,15326181553.8329,449665.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
-1183,2003,17110233204.3035,462533.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
-1184,2004,21666833271.5793,475529.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
-1185,2005,23416525408.7816,488619.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
-1186,2006,26552089552.7261,501863.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
-1187,2007,30395873363.1344,515330.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
-1188,2008,31426773675.9442,529038.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
-1189,2009,31827251614.8743,543021.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
-1190,2010,39823135537.025,557297.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
-1191,2011,48431515130.4807,571003.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
-1192,2012,52907674865.6902,582766.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
-1193,2013,58596759893.6996,593374.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
-1194,2014,57396475224.5102,604167.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
-1195,2015,45047964934.2517,615239.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
-1196,2016,44742061842.8796,626688.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
-1197,2017,49208798567.7614,638609.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
-1198,2018,52389983871.4635,650991.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
-1199,2019,51073980038.8588,663653.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
+1175,1995,13978346332.6819,396641.0,99.91,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,1.0,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
+1176,1996,13919739805.0336,404297.0,99.98,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,1.0,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
+1177,1997,13880783701.3615,411700.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,1.0,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
+1178,1998,13246339310.8786,418776.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,1.0,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
+1179,1999,12933886078.181,425518.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,1.0,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
+1180,2000,13677154746.4737,431896.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,1.0,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
+1181,2001,14072231691.6793,439122.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,1.0,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
+1182,2002,15326181553.8329,449665.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,1.0,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
+1183,2003,17110233204.3035,462533.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,1.0,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
+1184,2004,21666833271.5793,475529.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,1.0,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
+1185,2005,23416525408.7816,488619.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,1.0,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
+1186,2006,26552089552.7261,501863.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,1.0,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
+1187,2007,30395873363.1344,515330.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,1.0,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
+1188,2008,31426773675.9442,529038.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,1.0,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
+1189,2009,31827251614.8743,543021.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,1.0,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
+1190,2010,39823135537.025,557297.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,1.0,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
+1191,2011,48431515130.4807,571003.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,1.0,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
+1192,2012,52907674865.6902,582766.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,1.0,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
+1193,2013,58596759893.6996,593374.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,1.0,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
+1194,2014,57396475224.5102,604167.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,1.0,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
+1195,2015,45047964934.2517,615239.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,1.0,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
+1196,2016,44742061842.8796,626688.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,1.0,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
+1197,2017,49208798567.7614,638609.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,1.0,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
+1198,2018,52389983871.4635,650991.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,1.0,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
+1199,2019,51073980038.8588,663653.0,100.0,MO,446,Macau (Aomen),Macao (Aomen),25,1.8806319,0.0,Asia,1.0,Portuguese,Chinese,,Portuguese,Chinese Yue,,,,,,,PRT,,,,,,,MAC,446
 1200,1995,39603219574.0964,26599048.0,51.692,MA,504,Morocco,Maroc,710850,317.1194,0.0,Africa,25.0,Arabic,French,,Arabic,French,,,Tachelhit,Tamazghit,,,FRA,,,,,,,MAR,504
 1201,1996,44503276933.315,26999093.0,52.022,MA,504,Morocco,Maroc,710850,317.1194,0.0,Africa,25.0,Arabic,French,,Arabic,French,,,Tachelhit,Tamazghit,,,FRA,,,,,,,MAR,504
 1202,1997,43808713241.6908,27397118.0,52.35,MA,504,Morocco,Maroc,710850,317.1194,0.0,Africa,25.0,Arabic,French,,Arabic,French,,,Tachelhit,Tamazghit,,,FRA,,,,,,,MAR,504
