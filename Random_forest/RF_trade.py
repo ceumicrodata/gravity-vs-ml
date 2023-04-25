@@ -51,8 +51,9 @@ for chunk in chunks:
     data.fillna(1, inplace=True)
 
     # Create lagged values of trade and shift target
-    data['lag_value'] = data.groupby(['iso_o', 'iso_d'])['Value'].shift(-1)
-    data['Value'] = data.groupby(['iso_o', 'iso_d'])['Value'].shift(1)
+    data['lag_value'] = data.groupby(['iso_o', 'iso_d'])['Value'].shift(1)
+    data['Value'] = data.groupby(['iso_o', 'iso_d'])['Value'].shift(-1)
+    X_predic = data[data['Period'] == max(data['Period'])].drop(['Value'], axis=1)
 
     # Drop because of shift
     data.dropna(inplace=True)
@@ -62,22 +63,19 @@ for chunk in chunks:
     y = data['Value']
 
     rf_random.fit(X, y)
-    y_predic = rf_random.predict(X)
+    y_predic = rf_random.predict(X_predic)
 
     X ['target'] = y
-    X ['prediction'] = y_predic
+    X_predic ['prediction'] = y_predic
 
-    # Take predictions only for last year of chunk
-    X = X[X['Period'] == max(X['Period'])]
 
-    data_out = pd.concat([data_out, X])
+    data_out = pd.concat([data_out, X_predic])
 
     # Save results
 results = pd.DataFrame({
-    'year': data_out['Period'],
+    'year': data_out['Period']+1,
     'iso_o': data_out['iso_o'],
     'iso_d': data_out['iso_d'],
-    'target': data_out['target'],
     'prediction': data_out['prediction']
 })
 
