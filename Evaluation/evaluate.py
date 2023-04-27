@@ -57,6 +57,9 @@ for result_file in trade:
     if not results.shape[0]==146200:
         warnings.warn(f'{result_file} has incorrect number of records, skipping.')
         continue
+    if not results.year.nunique()==20 or results.year.astype(int).min()!=2000 or results.year.astype(int).max()!=2019 or results.year.value_counts().nunique()!=1:
+        warnings.warn(f'{result_file} has incorrect years')
+        continue
     try:
         results = results[[col for col in results if col!='target']].merge(trade_data[['year', 'iso_o', 'iso_d', 'target']], how='left')
         assert results.shape[0]==146200
