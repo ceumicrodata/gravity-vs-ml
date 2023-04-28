@@ -27,6 +27,16 @@ class DeepGravity(torch.nn.Module):
         p = dropout_p
         self.device = device
 
+        setattr(self, 'linear1', torch.nn.Linear(dim_input, dim_hidden))
+        setattr(self, 'relu1', torch.nn.LeakyReLU())
+        setattr(self, 'dropout1', torch.nn.Dropout(p))
+
+        for layer in range(2, num_layers+1):
+            setattr(self, f'linear{layer}', torch.nn.Linear(dim_hidden, dim_hidden))
+            setattr(self, f'relu{layer}', torch.nn.LeakyReLU())
+            setattr(self, f'dropout{layer}', torch.nn.Dropout(p))
+
+        """
         self.linear1 = torch.nn.Linear(dim_input, dim_hidden)
         self.relu1 = torch.nn.LeakyReLU()
         self.dropout1 = torch.nn.Dropout(p)
@@ -90,10 +100,24 @@ class DeepGravity(torch.nn.Module):
             self.dropout15 = torch.nn.Dropout(p)
 
         self.linear_out = torch.nn.Linear(dim_hidden // 2, 1)
+        """
+        self.linear_out = torch.nn.Linear(dim_hidden, 1)
 
     def forward(self,
                 vX: torch.Tensor,
                 num_layers: int=5) -> torch.Tensor:
+
+        lin = self.linear1(vX)
+        relu = self.relu1(lin)
+        drop = self.dropout1(relu)
+
+        for i in range(1, num_layers):
+            lin = self.linear2(drop)
+            relu = self.relu2(lin)
+            drop = self.dropout2(relu)
+
+        out = self.linear_out(drop)
+        """
         lin1 = self.linear1(vX)
         h_relu1 = self.relu1(lin1)
         drop1 = self.dropout1(h_relu1)
@@ -161,9 +185,9 @@ class DeepGravity(torch.nn.Module):
                 out = self.linear_out(drop10)
         else:
             out = self.linear_out(drop5)
-
+        """
         return out
-    
+
     def loss(self, output, target):
         lsm = torch.nn.LogSoftmax(dim=1)
         sm = torch.nn.Softmax(dim=1)
