@@ -35,25 +35,25 @@ for filename in os.listdir(folder_path):
 # Initialize h2o
 h2o.init(nthreads=-1, max_mem_size = "32g")
 
-# Set up model and grid search
-drf = H2ORandomForestEstimator(ntrees = 50, min_rows=10, nfolds = 5, stopping_metric= 'rmse', seed = 42)
-
-# define the hyperparameter grid
-tune_grid = {
-    'max_depth': [15, 18, 20],
-    'mtries': [21, 23]
-    }
-
-drf_grid = H2OGridSearch(model=drf,
-                          hyper_params=tune_grid,
-                          parallelism = 0
-                          )
-
-
 # Loop through chunks
 data_out = pd.DataFrame()
 
 for chunk in chunks:
+
+
+    drf = H2ORandomForestEstimator(ntrees = 50, min_rows=10, nfolds = 5, stopping_metric= 'rmse', seed = 42)
+
+    # define the hyperparameter grid
+    tune_grid = {
+        'max_depth': [15, 18, 20],
+        'mtries': [21, 23]
+        }
+
+    drf_grid = H2OGridSearch(model=drf,
+                            hyper_params=tune_grid,
+                            parallelism = 0
+                            ) 
+
     data = chunk.copy()
 
     # define the list of features to be used 
@@ -76,11 +76,14 @@ for chunk in chunks:
     # Drop date
     data = data.drop('date', axis=1)
 
+    # Create lag 
+    data['lagged_Value'] = data.groupby(['origin', 'destination'])['Value'].shift(1)
+
     # Shift traget
-    data['Value'] = data.groupby(['origin', 'destination'])['Value'].shift(-1)
+    data['Value_target'] = data.groupby(['origin', 'destination'])['Value'].shift(-1)
 
     # keep the last year 
-    X_predic = data[data['Timeline'] == max(data['Timeline'])].drop(['Value'], axis=1)
+    X_predic = data[data['Timeline'] == max(data['Timeline'])].drop(['Value_target'], axis=1)
 
     # Drop because of shift
     data.dropna(inplace=True)
@@ -95,7 +98,7 @@ for chunk in chunks:
     data_test = data_split[1]
 
     # Train using 5 fold CV plus grid search and predict using best model 
-    drf_grid.train(x = features, y = 'Value', training_frame = data_train, validation_frame = data_test)
+    drf_grid.train(x = features, y = 'Value_target', training_frame = data_train, validation_frame = data_test)
     drf_sorted_grid = drf_grid.get_grid(sort_by = 'rmse', decreasing = False)
     best_model = drf_sorted_grid[0]
     y_predic_h2o = best_model.predict(X_predic_h2o)

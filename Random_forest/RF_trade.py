@@ -30,21 +30,21 @@ for filename in os.listdir(folder_path):
         chunks.append(df)
 
 
-# Set up RF model
-regr = RangerForestRegressor(importance="impurity",max_depth=5, seed=42, n_jobs = -1)
-
-tune_grid = {"mtry": [15, 20, 25], "min_node_size": [4, 7, 10]}
-
-rf_random = GridSearchCV(
-    regr,
-    tune_grid,
-    cv=5,
-    scoring="neg_root_mean_squared_error",
-    verbose=3,
-)
-
 data_out = pd.DataFrame()
 for chunk in chunks:
+
+    regr = RangerForestRegressor(importance="impurity", seed=42, n_jobs = -1)
+
+    tune_grid = {"mtry": [15, 20, 25], "max_depth": [4, 7, 10]}
+
+    rf_random = GridSearchCV(
+        regr,
+        tune_grid,
+        cv=5,
+        scoring="neg_root_mean_squared_error",
+        verbose=3,
+    )
+
     data = chunk.copy()
 
     # Fill missing citynum 
@@ -52,20 +52,20 @@ for chunk in chunks:
 
     # Create lagged values of trade and shift target
     data['lag_value'] = data.groupby(['iso_o', 'iso_d'])['Value'].shift(1)
-    data['Value'] = data.groupby(['iso_o', 'iso_d'])['Value'].shift(-1)
-    X_predic = data[data['Period'] == max(data['Period'])].drop(['Value'], axis=1)
+    data['Value_target'] = data.groupby(['iso_o', 'iso_d'])['Value'].shift(-1)
+    # keep the last year 
+    X_predic = data[data['Period'] == max(data['Period'])].drop(['Value_target'], axis=1)
 
     # Drop because of shift
     data.dropna(inplace=True)
     
     # Run RF with 5 fold CV + grid search
-    X = data.drop(['Value'], axis=1)
-    y = data['Value']
+    X = data.drop(['Value_target'], axis=1)
+    y = data['Value_target']
 
     rf_random.fit(X, y)
     y_predic = rf_random.predict(X_predic)
 
-    X ['target'] = y
     X_predic ['prediction'] = y_predic
 
 
