@@ -28,7 +28,7 @@ flow_destination='iso_d'
 flows_value='Value'
 flows_timestamp='Period'
 flows_features=['contig', 'comlang_off', 'comlang_ethno', 'colony',
-                'comcol', 'curcol', 'col45', 'smctry', 'dist', 'distcap']
+                'comcol', 'curcol', 'col45', 'smctry', 'dist', 'distcap', 'distw', 'distwces']
 
 # Chunk parameters
 chunk_size = 5
@@ -59,7 +59,7 @@ config = {
         "lr": tune.loguniform(1e-4, 1e-1),
         "batch_size": tune.choice([2, 4, 8, 16]),
         "dim_hidden": tune.sample_from(lambda _: 2**np.random.randint(1, 4)),
-        "dropout_p": tune.choice([0.25, 0.35, 0.45]),
+        "dropout_p": tune.choice([0.05, 0.15, 0.25]),
         "num_layers": tune.choice([2, 5, 10]),
     }
 
