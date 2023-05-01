@@ -6,6 +6,8 @@ import torch
 from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 import pandas as pd
+import random
+import math
 
 class FlowDataset(torch.utils.data.Dataset):
     def __init__(self,
@@ -133,8 +135,8 @@ class FlowDataset(torch.utils.data.Dataset):
         self.data_dict = data_dict
         self._update_dict_attributes()
 
-    def split_train_validate_test(self,
-                                  validation_period = 1) -> Tuple['FlowDataset', 'FlowDataset']:
+    def split_train_validate_test_by_period(self,
+                                  validation_period = 1) -> Tuple['FlowDataset', 'FlowDataset', 'FlowDataset']:
 
         train_data = {(id, period): self.data_dict[(id, period)] for id in self.id_list for period in self.period_list[:-validation_period-1]}
         validation_data = {(id, period): self.data_dict[(id, period)] for id in self.id_list for period in self.period_list[-validation_period-1:-1]}
@@ -143,6 +145,25 @@ class FlowDataset(torch.utils.data.Dataset):
         return FlowDataset(domain=self.domain, columns=self.columns, unit = [self.flow_origin, self.flows_timestamp], data_dict = train_data), \
             FlowDataset(domain=self.domain, columns=self.columns, unit = [self.flow_origin, self.flows_timestamp], data_dict = validation_data), \
                 FlowDataset(domain=self.domain, columns=self.columns, unit = [self.flow_origin, self.flows_timestamp], data_dict = test_data)
+
+    def split_train_validate_test(self,
+                                  validation_period = 0.2) -> Tuple['FlowDataset', 'FlowDataset', 'FlowDataset']:
+
+        train_validation_data = {(id, period): self.data_dict[(id, period)] for id in self.id_list for period in self.period_list[:-1]}
+        random.seed(2023)
+        random_validation_sample = random.sample(list(train_validation_data.keys()), math.floor(len(train_validation_data)*validation_period))
+
+        train_data = {key: value for key, value in train_validation_data.items() if key not in random_validation_sample}
+        validation_data = {key: value for key, value in train_validation_data.items() if key in random_validation_sample}
+        test_data = {(id, period): self.data_dict[(id, period)] for id in self.id_list for period in self.period_list[-1:]}
+
+        return FlowDataset(domain=self.domain, columns=self.columns, unit = [self.flow_origin, self.flows_timestamp], data_dict = train_data), \
+            FlowDataset(domain=self.domain, columns=self.columns, unit = [self.flow_origin, self.flows_timestamp], data_dict = validation_data), \
+                FlowDataset(domain=self.domain, columns=self.columns, unit = [self.flow_origin, self.flows_timestamp], data_dict = test_data)
+
+    def split_train_validate_test_normalize(self,
+                                  validation_period = 0.2) -> Tuple['FlowDataset', 'FlowDataset', 'FlowDataset']:
+        return None
 
     def get_feature_dim(self) -> int:
         return self.data_dict[self.data_dict_index_mapper[0]].shape[1] - 2

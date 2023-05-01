@@ -8,6 +8,7 @@ import glob
 
 import random
 import torch.utils.data.distributed
+import torch.optim as optim
 import torch
 from ray import tune
 from ray.tune import CLIReporter
@@ -58,7 +59,7 @@ for chunk_file in tqdm.tqdm(all_files):
     ##############
     # Initial cleaning
     ##############
-    nodes_edges = nodes_edges.fillna(0)
+    #nodes_edges = nodes_edges.fillna(0)
 
     ##############
     # Create data objects
@@ -90,7 +91,7 @@ for chunk in range(len(train_data_chunked)):
     scheduler = ASHAScheduler(
         metric="loss",
         mode="min",
-        max_t=parameters.epochs,
+        max_t=parameters.max_epochs,
         grace_period=1,
         reduction_factor=2)
     # Set reporter
@@ -101,10 +102,11 @@ for chunk in range(len(train_data_chunked)):
     result = tune.run(
         tune.with_parameters(model_utils.train_and_validate_deepgravity, train_data_chunked = train_data_chunked,
                 validation_data_chunked = validation_data_chunked, chunk = chunk, momentum = parameters.momentum,
-                epochs = parameters.epochs,loss_fn = parameters.loss_fn),
+                #epochs = parameters.epochs,
+                loss_fn = parameters.loss_fn),
         resources_per_trial={"cpu": 4},
         config=parameters.config,
-        num_samples=10,
+        num_samples=20,
         scheduler=scheduler,
         progress_reporter=reporter,
         reuse_actors=False)
@@ -120,10 +122,16 @@ for chunk in range(len(train_data_chunked)):
                                     dropout_p = best_trial.config["dropout_p"],
                                     num_layers = best_trial.config["num_layers"],)
 
-    best_checkpoint = result.get_best_checkpoint(trial=best_trial, metric="loss", mode="min")
-    best_checkpoint_dir = best_checkpoint.to_directory(path=os.path.join(parameters.output_path, "best_checkpoints", parameters.domain, str(chunk), f"checkpoint_{str(datetime.datetime.now()).replace(' ', '_')[:19]}"))
-    model_state, optimizer_state = torch.load(os.path.join(best_checkpoint_dir, "checkpoint"))
-    best_trained_model.load_state_dict(model_state)
+    #best_checkpoint = result.get_best_checkpoint(trial=best_trial, metric="loss", mode="min")
+    #best_checkpoint_dir = best_checkpoint.to_directory(path=os.path.join(parameters.output_path, "best_checkpoints", parameters.domain, str(chunk), f"checkpoint_{str(datetime.datetime.now()).replace(' ', '_')[:19]}"))
+    #model_state, optimizer_state = torch.load(os.path.join(best_checkpoint_dir, "checkpoint"))
+    #best_trained_model.load_state_dict(model_state)
+
+    train_data_loader = torch.utils.data.DataLoader(train_data_chunked[chunk], batch_size=4)
+    optimizer = optim.RMSprop(best_trained_model.parameters(), lr=best_trial.config["lr"], momentum=parameters.momentum)
+    for epoch in range(best_trial.config["epochs"]):
+        #print(f"Epoch {epoch+1}\n-------------------------------")
+        model_utils.train_model(train_data_loader, best_trained_model, optimizer, epoch, parameters.loss_fn)
 
     test_data_loader = torch.utils.data.DataLoader(test_data_chunked[chunk], batch_size=4)
     model_utils.test(test_data_loader, best_trained_model, test_data_chunked[chunk], loss_fn = parameters.loss_fn, store_predictions=True)

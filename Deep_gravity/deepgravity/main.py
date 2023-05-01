@@ -16,7 +16,7 @@ import model_utils
 from data_compiler import FlowDataset
 from deepgravity import DeepGravity
 
-sys.path.append('../google_mobility_predictions/')
+sys.path.append('../trade_predictions/')
 import parameters
 
 # random seeds

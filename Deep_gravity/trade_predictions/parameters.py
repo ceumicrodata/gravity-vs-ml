@@ -33,7 +33,7 @@ flows_features=['contig', 'comlang_off', 'comlang_ethno', 'colony',
 # Chunk parameters
 chunk_size = 5
 window_size = 1
-validation_period = 1
+validation_period = 0.2
 
 # Add lag parameters
 lag_periods = 1
@@ -61,17 +61,20 @@ config = {
         "dim_hidden": tune.sample_from(lambda _: 2**np.random.randint(1, 4)),
         "dropout_p": tune.choice([0.05, 0.15, 0.25]),
         "num_layers": tune.choice([2, 5, 10]),
+        "epochs": tune.choice([250, 500, 750, 1000]),
+        #"loss_fn": tune.choice([nn.L1Loss(), nn.MSELoss()])
     }
 
 ##############
 # Model params
 ##############
 
-epochs=500
+#epochs=500
+max_epochs = 1000
 momentum=0.9
 seed=1234
 device='cpu'
-loss_fn = nn.L1Loss()
+loss_fn = nn.MSELoss()
 
 # TBA add mode to only evaluate
 #mode='train'

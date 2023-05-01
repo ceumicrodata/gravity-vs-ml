@@ -77,7 +77,7 @@ def train_and_validate_deepgravity(config,
                              validation_data_chunked,
                              chunk,
                              momentum,
-                             epochs,
+                             #epochs,
                              loss_fn = None,
                              checkpoint_dir=None):
 
@@ -100,7 +100,7 @@ def train_and_validate_deepgravity(config,
         deep_gravity_model.load_state_dict(model_state)
         optimizer.load_state_dict(optimizer_state)
 
-    for epoch in range(epochs):
+    for epoch in range(config["epochs"]):
         #print(f"Epoch {epoch+1}\n-------------------------------")
         train_model(train_data_loader, deep_gravity_model, optimizer, epoch, loss_fn)
         val_loss = validate_model(validation_data_loader, deep_gravity_model,
