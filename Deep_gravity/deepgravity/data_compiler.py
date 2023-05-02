@@ -173,7 +173,7 @@ class FlowDataset(torch.utils.data.Dataset):
         train_data_table = pd.concat([value for key, value in train_data.items()])
 
         scaler = StandardScaler()
-        columns_to_transform = [i for i in train_data_table.columns if i!=f'{self.target_value}_target']
+        columns_to_transform = [i for i in train_data_table.columns if (i!=f'{self.target_value}_target') & (i!=self.flow_destination)]
         scaler.fit(train_data_table[columns_to_transform])
         train_data_transformed = {}
         for key, value in train_data.items():
