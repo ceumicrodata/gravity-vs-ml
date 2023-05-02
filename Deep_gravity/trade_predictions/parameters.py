@@ -57,11 +57,11 @@ columns_to_rename = {'Timestamp_target':'year'}
 
 config = {
         "lr": tune.loguniform(1e-4, 1e-1),
-        "batch_size": tune.choice([2, 4, 8, 16]),
+        "batch_size": 8, #tune.choice([2, 4, 8, 16]),
         "dim_hidden": tune.sample_from(lambda _: 2**np.random.randint(1, 4)),
         "dropout_p": tune.choice([0.05, 0.15, 0.25]),
         "num_layers": tune.choice([2, 5, 10]),
-        "epochs": tune.choice([250, 500, 750, 1000]),
+        "epochs": tune.choice([500, 1000]),
         #"loss_fn": tune.choice([nn.L1Loss(), nn.MSELoss()])
     }
 

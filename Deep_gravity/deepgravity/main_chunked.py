@@ -44,6 +44,7 @@ columns = {'node_id': parameters.node_id,
 
 train_data_chunked = []
 validation_data_chunked = []
+train_validation_data_chunked = []
 test_data_chunked = []
 
 ##############
@@ -76,9 +77,10 @@ for chunk_file in tqdm.tqdm(all_files):
     flow_chunk.add_target_values()
 
     # Create a list of FlowDataset objects
-    train_data, validation_data, test_data = flow_chunk.split_train_validate_test(validation_period = parameters.validation_period)
+    train_data, validation_data, train_validation_data, test_data = flow_chunk.split_train_validate_test_normalize(validation_period = parameters.validation_period)
     train_data_chunked.append(train_data)
     validation_data_chunked.append(validation_data)
+    train_validation_data_chunked.append(train_validation_data)
     test_data_chunked.append(test_data)
 
 ###################
@@ -106,7 +108,7 @@ for chunk in range(len(train_data_chunked)):
                 loss_fn = parameters.loss_fn),
         resources_per_trial={"cpu": 4},
         config=parameters.config,
-        num_samples=20,
+        num_samples=10,
         scheduler=scheduler,
         progress_reporter=reporter,
         reuse_actors=False)
@@ -122,16 +124,16 @@ for chunk in range(len(train_data_chunked)):
                                     dropout_p = best_trial.config["dropout_p"],
                                     num_layers = best_trial.config["num_layers"],)
 
-    #best_checkpoint = result.get_best_checkpoint(trial=best_trial, metric="loss", mode="min")
-    #best_checkpoint_dir = best_checkpoint.to_directory(path=os.path.join(parameters.output_path, "best_checkpoints", parameters.domain, str(chunk), f"checkpoint_{str(datetime.datetime.now()).replace(' ', '_')[:19]}"))
-    #model_state, optimizer_state = torch.load(os.path.join(best_checkpoint_dir, "checkpoint"))
-    #best_trained_model.load_state_dict(model_state)
+    best_checkpoint = result.get_best_checkpoint(trial=best_trial, metric="loss", mode="min")
+    best_checkpoint_dir = best_checkpoint.to_directory(path=os.path.join(parameters.output_path, "best_checkpoints", parameters.domain, str(chunk), f"checkpoint_{str(datetime.datetime.now()).replace(' ', '_')[:19]}"))
+    model_state, optimizer_state = torch.load(os.path.join(best_checkpoint_dir, "checkpoint"))
+    best_trained_model.load_state_dict(model_state)
 
-    train_data_loader = torch.utils.data.DataLoader(train_data_chunked[chunk], batch_size=4)
+    train_validation_data_loader = torch.utils.data.DataLoader(train_validation_data_chunked[chunk], batch_size=4)
     optimizer = optim.RMSprop(best_trained_model.parameters(), lr=best_trial.config["lr"], momentum=parameters.momentum)
     for epoch in range(best_trial.config["epochs"]):
         #print(f"Epoch {epoch+1}\n-------------------------------")
-        model_utils.train_model(train_data_loader, best_trained_model, optimizer, epoch, parameters.loss_fn)
+        model_utils.train_model(train_validation_data_loader, best_trained_model, optimizer, epoch, parameters.loss_fn)
 
     test_data_loader = torch.utils.data.DataLoader(test_data_chunked[chunk], batch_size=4)
     model_utils.test(test_data_loader, best_trained_model, test_data_chunked[chunk], loss_fn = parameters.loss_fn, store_predictions=True)
