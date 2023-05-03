@@ -43,6 +43,13 @@ time_dependent_node_columns = ['gdp', 'total_population', 'urban_population(%_of
 # Rename columns for final output
 columns_to_rename = {'Timestamp_target':'year'}
 
+# Log columns
+columns_to_log = ['dist', 'distcap', 'distw', 'distwces', 'gdp_o', 'total_population_o',
+'urban_population(%_of_total)_o', 'area_o', 'dis_int_o',
+'gdp_d', 'total_population_d', 'urban_population(%_of_total)_d', 'area_d', 'dis_int_d',
+'Value_1', 'gdp_o_1', 'gdp_d_1', 'total_population_o_1',  'total_population_d_1',
+'urban_population(%_of_total)_o_1', 'urban_population(%_of_total)_d_1']
+
 ##############
 # Global settings
 ##############
@@ -61,7 +68,7 @@ config = {
         "dim_hidden": tune.sample_from(lambda _: 2**np.random.randint(1, 4)),
         "dropout_p": tune.choice([0.05, 0.15, 0.25]),
         "num_layers": tune.choice([2, 5, 10]),
-        "epochs": tune.choice([500, 1000]),
+        "epochs": 500 #tune.choice([500, 1000]),
         #"loss_fn": tune.choice([nn.L1Loss(), nn.MSELoss()])
     }
 

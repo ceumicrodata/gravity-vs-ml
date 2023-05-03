@@ -202,6 +202,42 @@ class FlowDataset(torch.utils.data.Dataset):
             FlowDataset(domain=self.domain, columns=self.columns, unit = [self.flow_origin, self.flows_timestamp], data_dict = train_validation_data_transformed), \
                 FlowDataset(domain=self.domain, columns=self.columns, unit = [self.flow_origin, self.flows_timestamp], data_dict = test_data_transformed)
 
+    def split_train_validate_test_logs(self,
+                                  validation_period = 0.2,
+                                  columns_to_log = []) -> Tuple['FlowDataset', 'FlowDataset', 'FlowDataset']:
+        train_validation_data = {(id, period): self.data_dict[(id, period)] for id in self.id_list for period in self.period_list[:-1]}
+        random.seed(2023)
+        random_validation_sample = random.sample(list(train_validation_data.keys()), math.floor(len(train_validation_data)*validation_period))
+
+        train_data = {key: value for key, value in train_validation_data.items() if key not in random_validation_sample}
+        train_data_transformed = {}
+        for key, value in train_data.items():
+            value[columns_to_log] = np.log1p(value[columns_to_log])
+            train_data_transformed[key] = value
+
+        validation_data = {key: value for key, value in train_validation_data.items() if key in random_validation_sample}
+        validation_data_transformed = {}
+        for key, value in validation_data.items():
+            value[columns_to_log] = np.log1p(value[columns_to_log])
+            validation_data_transformed[key] = value
+
+        train_validation_data_transformed = {}
+        for key, value in train_validation_data.items():
+            value[columns_to_log] = np.log1p(value[columns_to_log])
+            train_validation_data_transformed[key] = value
+
+        test_data = {(id, period): self.data_dict[(id, period)] for id in self.id_list for period in self.period_list[-1:]}
+        test_data_transformed = {}
+        for key, value in test_data.items():
+            value[columns_to_log] = np.log1p(value[columns_to_log])
+            test_data_transformed[key] = value
+
+        return FlowDataset(domain=self.domain, columns=self.columns, unit = [self.flow_origin, self.flows_timestamp], data_dict = train_data_transformed), \
+            FlowDataset(domain=self.domain, columns=self.columns, unit = [self.flow_origin, self.flows_timestamp], data_dict = validation_data_transformed), \
+            FlowDataset(domain=self.domain, columns=self.columns, unit = [self.flow_origin, self.flows_timestamp], data_dict = train_validation_data_transformed), \
+                FlowDataset(domain=self.domain, columns=self.columns, unit = [self.flow_origin, self.flows_timestamp], data_dict = test_data_transformed)
+
+
     def get_feature_dim(self) -> int:
         return self.data_dict[self.data_dict_index_mapper[0]].shape[1] - 2
 

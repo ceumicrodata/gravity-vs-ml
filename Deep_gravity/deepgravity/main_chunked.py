@@ -77,7 +77,7 @@ for chunk_file in tqdm.tqdm(all_files):
     flow_chunk.add_target_values()
 
     # Create a list of FlowDataset objects
-    train_data, validation_data, train_validation_data, test_data = flow_chunk.split_train_validate_test_normalize(validation_period = parameters.validation_period)
+    train_data, validation_data, train_validation_data, test_data = flow_chunk.split_train_validate_test_logs(validation_period = parameters.validation_period,columns_to_log=parameters.columns_to_log)
     train_data_chunked.append(train_data)
     validation_data_chunked.append(validation_data)
     train_validation_data_chunked.append(train_validation_data)
@@ -129,11 +129,11 @@ for chunk in range(len(train_data_chunked)):
     model_state, optimizer_state = torch.load(os.path.join(best_checkpoint_dir, "checkpoint"))
     best_trained_model.load_state_dict(model_state)
 
-    train_validation_data_loader = torch.utils.data.DataLoader(train_validation_data_chunked[chunk], batch_size=4)
-    optimizer = optim.RMSprop(best_trained_model.parameters(), lr=best_trial.config["lr"], momentum=parameters.momentum)
-    for epoch in range(best_trial.config["epochs"]):
-        #print(f"Epoch {epoch+1}\n-------------------------------")
-        model_utils.train_model(train_validation_data_loader, best_trained_model, optimizer, epoch, parameters.loss_fn)
+    #train_validation_data_loader = torch.utils.data.DataLoader(train_validation_data_chunked[chunk], batch_size=4)
+    #optimizer = optim.RMSprop(best_trained_model.parameters(), lr=best_trial.config["lr"], momentum=parameters.momentum)
+    #for epoch in range(best_trial.config["epochs"]):
+    #    #print(f"Epoch {epoch+1}\n-------------------------------")
+    #    model_utils.train_model(train_validation_data_loader, best_trained_model, optimizer, epoch, parameters.loss_fn)
 
     test_data_loader = torch.utils.data.DataLoader(test_data_chunked[chunk], batch_size=4)
     model_utils.test(test_data_loader, best_trained_model, test_data_chunked[chunk], loss_fn = parameters.loss_fn, store_predictions=True)
