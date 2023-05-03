@@ -108,7 +108,7 @@ for chunk in range(len(train_data_chunked)):
                 loss_fn = parameters.loss_fn),
         resources_per_trial={"cpu": 4},
         config=parameters.config,
-        num_samples=10,
+        num_samples=20,
         scheduler=scheduler,
         progress_reporter=reporter,
         reuse_actors=False)
@@ -129,11 +129,11 @@ for chunk in range(len(train_data_chunked)):
     model_state, optimizer_state = torch.load(os.path.join(best_checkpoint_dir, "checkpoint"))
     best_trained_model.load_state_dict(model_state)
 
-    #train_validation_data_loader = torch.utils.data.DataLoader(train_validation_data_chunked[chunk], batch_size=4)
-    #optimizer = optim.RMSprop(best_trained_model.parameters(), lr=best_trial.config["lr"], momentum=parameters.momentum)
-    #for epoch in range(best_trial.config["epochs"]):
-    #    #print(f"Epoch {epoch+1}\n-------------------------------")
-    #    model_utils.train_model(train_validation_data_loader, best_trained_model, optimizer, epoch, parameters.loss_fn)
+    train_validation_data_loader = torch.utils.data.DataLoader(train_validation_data_chunked[chunk], batch_size=4)
+    optimizer = optim.RMSprop(best_trained_model.parameters(), lr=best_trial.config["lr"], momentum=parameters.momentum)
+    for epoch in range(best_trial.config["epochs"]):
+        #print(f"Epoch {epoch+1}\n-------------------------------")
+        model_utils.train_model(train_validation_data_loader, best_trained_model, optimizer, epoch, parameters.loss_fn)
 
     test_data_loader = torch.utils.data.DataLoader(test_data_chunked[chunk], batch_size=4)
     model_utils.test(test_data_loader, best_trained_model, test_data_chunked[chunk], loss_fn = parameters.loss_fn, store_predictions=True)
