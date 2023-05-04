@@ -129,13 +129,13 @@ for chunk in range(len(train_data_chunked)):
     model_state, optimizer_state = torch.load(os.path.join(best_checkpoint_dir, "checkpoint"))
     best_trained_model.load_state_dict(model_state)
 
-    train_validation_data_loader = torch.utils.data.DataLoader(train_validation_data_chunked[chunk], batch_size=4)
-    optimizer = optim.RMSprop(best_trained_model.parameters(), lr=best_trial.config["lr"], momentum=parameters.momentum)
-    for epoch in range(best_trial.config["epochs"]):
-        #print(f"Epoch {epoch+1}\n-------------------------------")
-        model_utils.train_model(train_validation_data_loader, best_trained_model, optimizer, epoch, parameters.loss_fn)
+    #train_validation_data_loader = torch.utils.data.DataLoader(train_validation_data_chunked[chunk], batch_size=32)
+    #optimizer = optim.RMSprop(best_trained_model.parameters(), lr=best_trial.config["lr"], momentum=parameters.momentum)
+    #for epoch in range(best_trial.config["epochs"]):
+    #    #print(f"Epoch {epoch+1}\n-------------------------------")
+    #    model_utils.train_model(train_validation_data_loader, best_trained_model, optimizer, epoch, parameters.loss_fn)
 
-    test_data_loader = torch.utils.data.DataLoader(test_data_chunked[chunk], batch_size=4)
+    test_data_loader = torch.utils.data.DataLoader(test_data_chunked[chunk], batch_size=32)
     model_utils.test(test_data_loader, best_trained_model, test_data_chunked[chunk], loss_fn = parameters.loss_fn, store_predictions=True)
     print("Finished prediction on test set")
     prediction_list.append(test_data_chunked[chunk].compile_predictions(columns_to_rename = parameters.columns_to_rename))

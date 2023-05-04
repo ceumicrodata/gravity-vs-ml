@@ -4,6 +4,7 @@ import os
 import torch.utils.data.distributed
 import torch.optim as optim
 from ray import tune
+import numpy as np
 
 from deepgravity import DeepGravity
 
@@ -31,6 +32,23 @@ from deepgravity import DeepGravity
 #        if batch % 10 == 0:
 #            loss, current = loss.item(), (batch + 1) * len(X)
 #            print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
+
+class EarlyStopper:
+    def __init__(self, patience=1, min_delta=0):
+        self.patience = patience
+        self.min_delta = min_delta
+        self.counter = 0
+        self.min_validation_loss = np.inf
+
+    def early_stop(self, validation_loss):
+        if validation_loss < self.min_validation_loss:
+            self.min_validation_loss = validation_loss
+            self.counter = 0
+        elif validation_loss > (self.min_validation_loss + self.min_delta):
+            self.counter += 1
+            if self.counter >= self.patience:
+                return True
+        return False
 
 def train_model(dataloader, model, optimizer, epoch, loss_fn = None):
     running_loss = 0.0
@@ -100,6 +118,10 @@ def train_and_validate_deepgravity(config,
         deep_gravity_model.load_state_dict(model_state)
         optimizer.load_state_dict(optimizer_state)
 
+    #val_losses = [np.exp(100), np.exp(100), np.exp(100)]
+
+    early_stopper = EarlyStopper(patience=10, min_delta=5e+18)
+
     for epoch in range(config["epochs"]):
         #print(f"Epoch {epoch+1}\n-------------------------------")
         train_model(train_data_loader, deep_gravity_model, optimizer, epoch, loss_fn)
@@ -111,6 +133,10 @@ def train_and_validate_deepgravity(config,
             torch.save((deep_gravity_model.state_dict(), optimizer.state_dict()), path)
 
         tune.report(loss=val_loss)
+
+        if epoch>100:
+            if early_stopper.early_stop(val_loss):
+                break
 
     print("Finished training!")
 
