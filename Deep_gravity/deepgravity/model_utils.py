@@ -120,7 +120,7 @@ def train_and_validate_deepgravity(config,
 
     #val_losses = [np.exp(100), np.exp(100), np.exp(100)]
 
-    early_stopper = EarlyStopper(patience=10, min_delta=5e+18)
+    early_stopper = EarlyStopper(patience=10, min_delta=3e+17)
 
     for epoch in range(config["epochs"]):
         #print(f"Epoch {epoch+1}\n-------------------------------")

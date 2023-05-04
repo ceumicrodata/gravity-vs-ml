@@ -94,7 +94,7 @@ for chunk in range(len(train_data_chunked)):
         metric="loss",
         mode="min",
         max_t=parameters.max_epochs,
-        grace_period=1,
+        grace_period=50,
         reduction_factor=2)
     # Set reporter
     reporter = CLIReporter(
@@ -108,7 +108,7 @@ for chunk in range(len(train_data_chunked)):
                 loss_fn = parameters.loss_fn),
         resources_per_trial={"cpu": 4},
         config=parameters.config,
-        num_samples=20,
+        num_samples=8,
         scheduler=scheduler,
         progress_reporter=reporter,
         reuse_actors=False)

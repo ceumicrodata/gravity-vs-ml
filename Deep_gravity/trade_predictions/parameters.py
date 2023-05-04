@@ -63,12 +63,12 @@ columns_to_log = ['dist', 'distcap', 'distw', 'distwces', 'gdp_o', 'total_popula
 ##############
 
 config = {
-        "lr": tune.loguniform(1e-4, 1e-1),
+        "lr": tune.choice([0.00025, 0.0003]), #tune.loguniform(1e-4, 1e-1),
         "batch_size": 32, #tune.choice([2, 4, 8, 16]),
-        "dim_hidden": tune.sample_from(lambda _: 2**np.random.randint(3, 6)),
-        "dropout_p": tune.choice([0.05, 0.15]),
-        "num_layers": tune.choice([5, 10, 15]),
-        "epochs": 1000 #tune.choice([500, 1000]),
+        "dim_hidden": tune.sample_from(lambda _: 2**np.random.randint(3, 5)),
+        "dropout_p": tune.choice([0.02, 0.05]),
+        "num_layers": 5, #tune.choice([5, 10, 15]),
+        "epochs": 1000, #tune.choice([500, 1000]),
         #"loss_fn": tune.choice([nn.L1Loss(), nn.MSELoss()])
     }
 
@@ -77,7 +77,7 @@ config = {
 ##############
 
 #epochs=500
-max_epochs = 500
+max_epochs = 1000
 momentum=0.9
 seed=1234
 device='cpu'
