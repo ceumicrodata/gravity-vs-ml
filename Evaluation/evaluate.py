@@ -71,9 +71,78 @@ for result_file in trade:
     except:
         warnings.warn(f"Unhandled error when processing {result_file}, skipping")
         continue
-    if pathlib.Path('../evaluations.csv').is_file():
-        pre_existing_results = pd.read_csv("../evaluations.csv")
+    if pathlib.Path('../evaluations_trade.csv').is_file():
+        pre_existing_results = pd.read_csv("../evaluations_trade.csv")
         results = pd.concat([pre_existing_results, pd.DataFrame([measures])])
     else:
         results = pd.DataFrame([measures])
-    results.to_csv('../evaluations.csv', index=False)
+    results.to_csv('../evaluations_trade.csv', index=False)
+
+
+# Evaluate geods result files
+geods_data = pd.read_csv("../Output_datasets/GeoDS_mobility_flow_prediction/edge_target_list.csv")
+geods_data = geods_data.rename(columns={"pop_flows":"target", "Timeline":"year"})
+for result_file in geods:
+    print(f'Processing {result_file}')
+    results = pd.read_csv(result_file)
+    if 'year' not in results or 'origin' not in results or 'destination' not in results or 'prediction' not in results:
+        warnings.warn(f'{result_file} has missing columns, skipping.')
+        continue
+    if not results.shape[0]==24816:
+        warnings.warn(f'{result_file} has incorrect number of records, skipping.')
+        continue
+    if not results.year.nunique()==11 or results.year.astype(int).min()!=50 or results.year.astype(int).max()!=150 or results.year.value_counts().nunique()!=1:
+        warnings.warn(f'{result_file} has incorrect years')
+        continue
+    try:
+        results = results[[col for col in results if col!='target']].merge(geods_data[['year', 'origin', 'destination', 'target']], how='left')
+        assert results.shape[0]==24816
+        predictions = results.prediction
+        targets = results.target
+        measures = dict(zip(measure_names,(mae(predictions,targets), rmae(predictions,targets), mse(predictions, targets), rmse(predictions, targets), r2(predictions, targets), cpc(predictions,targets))))
+        measures['sha'] = sha
+        measures['path'] = result_file
+    except:
+        warnings.warn(f"Unhandled error when processing {result_file}, skipping")
+        continue
+    if pathlib.Path('../evaluations_geods.csv').is_file():
+        pre_existing_results = pd.read_csv("../evaluations_geods.csv")
+        results = pd.concat([pre_existing_results, pd.DataFrame([measures])])
+    else:
+        results = pd.DataFrame([measures])
+    results.to_csv('../evaluations_geods.csv', index=False)
+
+
+# Evaluate google result files
+google_data = pd.read_csv("../Output_datasets/Google_mobility_flow_prediction/node_target_list.csv")
+google_data = google_data.melt(id_vars = ['iso_3166_2_code','date','Timeline'], var_name='destination', value_name='target')
+google_data = google_data.rename(columns={"iso_3166_2_code":"origin", "Timeline":"year"})
+for result_file in google:
+    print(f'Processing {result_file}')
+    results = pd.read_csv(result_file)
+    if 'year' not in results or 'origin' not in results or 'destination' not in results or 'prediction' not in results:
+        warnings.warn(f'{result_file} has missing columns, skipping.')
+        continue
+    if not results.shape[0]==3744:
+        warnings.warn(f'{result_file} has incorrect number of records, skipping.')
+        continue
+    if not results.year.nunique()==13 or results.year.astype(int).min()!=350 or results.year.astype(int).max()!=950 or results.year.value_counts().nunique()!=1:
+        warnings.warn(f'{result_file} has incorrect years')
+        continue
+    try:
+        results = results[[col for col in results if col!='target']].merge(google_data[['year', 'origin', 'destination', 'target']], how='left')
+        assert results.shape[0]==3744
+        predictions = results.prediction
+        targets = results.target
+        measures = dict(zip(measure_names,(mae(predictions,targets), rmae(predictions,targets), mse(predictions, targets), rmse(predictions, targets), r2(predictions, targets), cpc(predictions,targets))))
+        measures['sha'] = sha
+        measures['path'] = result_file
+    except:
+        warnings.warn(f"Unhandled error when processing {result_file}, skipping")
+        continue
+    if pathlib.Path('../evaluations_google.csv').is_file():
+        pre_existing_results = pd.read_csv("../evaluations_google.csv")
+        results = pd.concat([pre_existing_results, pd.DataFrame([measures])])
+    else:
+        results = pd.DataFrame([measures])
+    results.to_csv('../evaluations_google.csv', index=False)
