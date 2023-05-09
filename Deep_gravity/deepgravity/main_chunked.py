@@ -18,7 +18,7 @@ import model_utils
 from data_compiler import FlowDataset
 from deepgravity import DeepGravity
 
-sys.path.append('../trade_predictions/')
+sys.path.append('../GeoDS_mobility_predictions/')
 import parameters
 
 # random seeds
@@ -54,7 +54,7 @@ test_data_chunked = []
 all_files = glob.glob(os.path.join(parameters.chunk_path , "*.csv"))
 
 for chunk_file in tqdm.tqdm(all_files):
-    nodes_edges = pd.read_csv(chunk_file, index_col=None, header=0)
+    nodes_edges = pd.read_csv(chunk_file, index_col=None, header=0, thousands=',')
     nodes_edges.drop(['date','start_date'], errors='ignore', axis=1, inplace=True)
 
     ##############

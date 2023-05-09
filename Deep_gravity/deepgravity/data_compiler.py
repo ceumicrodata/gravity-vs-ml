@@ -212,23 +212,27 @@ class FlowDataset(torch.utils.data.Dataset):
         train_data = {key: value for key, value in train_validation_data.items() if key not in random_validation_sample}
         train_data_transformed = {}
         for key, value in train_data.items():
+            value[columns_to_log] = value[columns_to_log].astype(float)
             value[columns_to_log] = np.log1p(value[columns_to_log])
             train_data_transformed[key] = value
 
         validation_data = {key: value for key, value in train_validation_data.items() if key in random_validation_sample}
         validation_data_transformed = {}
         for key, value in validation_data.items():
+            value[columns_to_log] = value[columns_to_log].astype(float)
             value[columns_to_log] = np.log1p(value[columns_to_log])
             validation_data_transformed[key] = value
 
         train_validation_data_transformed = {}
         for key, value in train_validation_data.items():
+            value[columns_to_log] = value[columns_to_log].astype(float)
             value[columns_to_log] = np.log1p(value[columns_to_log])
             train_validation_data_transformed[key] = value
 
         test_data = {(id, period): self.data_dict[(id, period)] for id in self.id_list for period in self.period_list[-1:]}
         test_data_transformed = {}
         for key, value in test_data.items():
+            value[columns_to_log] = value[columns_to_log].replace(',', '').astype(float)
             value[columns_to_log] = np.log1p(value[columns_to_log])
             test_data_transformed[key] = value
 
