@@ -25,6 +25,8 @@ jobs:
         run: |
           git config --global user.name 'Automated Model Evaluator'
           git config --global user.email 'gnn_chapter@noreply.github.com'
-          git add evaluations.csv
+          git add evaluations_trade.csv
+          git add evaluations_geods.csv
+          git add evaluations_google.csv
           git commit -m "feat: add automated model evaluations"
           git push

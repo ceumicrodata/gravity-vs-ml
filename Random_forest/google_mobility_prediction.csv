@@ -1,4 +1,4 @@
-,Timeline,origin,destination,prediction
+,year,origin,destination,prediction
 349,450,US-AL,retail_and_recreation_percent_change_from_baseline,-0.1833779866993427
 699,450,US-AZ,retail_and_recreation_percent_change_from_baseline,-6.004586244374513
 1049,450,US-AR,retail_and_recreation_percent_change_from_baseline,7.504390122890473
