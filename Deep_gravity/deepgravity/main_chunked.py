@@ -94,7 +94,7 @@ for chunk in range(len(train_data_chunked)):
         metric="loss",
         mode="min",
         max_t=parameters.max_epochs,
-        grace_period=50,
+        grace_period=20,
         reduction_factor=2)
     # Set reporter
     reporter = CLIReporter(
