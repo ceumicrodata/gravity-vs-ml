@@ -110,7 +110,8 @@ def train_and_validate_deepgravity(config,
                                     dropout_p = config["dropout_p"],
                                     num_layers = config["num_layers"],)
 
-    optimizer = optim.RMSprop(deep_gravity_model.parameters(), lr=config["lr"], momentum=momentum)
+    optimizer = optim.RMSprop(deep_gravity_model.parameters(), lr=config["lr"], momentum=momentum,
+    weight_decay=0.01)
 
     if checkpoint_dir:
         model_state, optimizer_state = torch.load(

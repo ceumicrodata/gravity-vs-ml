@@ -75,11 +75,11 @@ columns_to_log = ['distances', 'visitor_flows', 'population_2019_o',
 ##############
 
 config = {
-        "lr": tune.choice([0.00025, 0.0003]), #tune.loguniform(1e-4, 1e-1),
+        "lr": tune.choice([0.00015, 0.00025, 0.0003]), #tune.loguniform(1e-4, 1e-1),
         "batch_size": 32, #tune.choice([2, 4, 8, 16]),
         "dim_hidden": tune.sample_from(lambda _: 2**np.random.randint(3, 5)), #tune.sample_from(lambda _: 2**np.random.randint(2, 6)),
         "dropout_p": tune.choice([0.02, 0.05]), #tune.choice([0.25, 0.35, 0.45]),
-        "num_layers": 5, #tune.choice([5, 10, 15]),
+        "num_layers": tune.choice([5, 10, 15]), #5
         "epochs": 1000, #tune.choice([500, 1000]),
         #"loss_fn": tune.choice([nn.L1Loss(), nn.MSELoss()])
     }
