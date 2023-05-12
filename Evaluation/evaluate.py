@@ -71,12 +71,12 @@ for result_file in trade:
     except:
         warnings.warn(f"Unhandled error when processing {result_file}, skipping")
         continue
-    if pathlib.Path('../evaluations_trade.csv').is_file():
-        pre_existing_results = pd.read_csv("../evaluations_trade.csv")
-        results = pd.concat([pre_existing_results, pd.DataFrame([measures])])
-    else:
-        results = pd.DataFrame([measures])
-    results.to_csv('../evaluations_trade.csv', index=False)
+    results = pd.DataFrame([measures])
+    results.to_csv('../Evaluations/most_recent_run/evaluations_trade.csv', index=False)
+    if pathlib.Path('../Evaluations/all_runs/evaluations_trade.csv').is_file():
+        pre_existing_results = pd.read_csv("../Evaluations/all_runs/evaluations_trade.csv")
+        results = pd.concat([pre_existing_results, results])
+    results.to_csv('../Evaluations/all_runs/evaluations_trade.csv', index=False)
 
 
 # Evaluate geods result files
@@ -105,12 +105,12 @@ for result_file in geods:
     except:
         warnings.warn(f"Unhandled error when processing {result_file}, skipping")
         continue
-    if pathlib.Path('../evaluations_geods.csv').is_file():
-        pre_existing_results = pd.read_csv("../evaluations_geods.csv")
-        results = pd.concat([pre_existing_results, pd.DataFrame([measures])])
-    else:
-        results = pd.DataFrame([measures])
-    results.to_csv('../evaluations_geods.csv', index=False)
+    results = pd.DataFrame([measures])
+    results.to_csv('../Evaluations/most_recent_run/evaluations_geods.csv', index=False)
+    if pathlib.Path('../Evaluations/all_runs/evaluations_geods.csv').is_file():
+        pre_existing_results = pd.read_csv("../Evaluations/all_runs/evaluations_geods.csv")
+        results = pd.concat([pre_existing_results, results])
+    results.to_csv('../Evaluations/all_runs/evaluations_geods.csv', index=False)
 
 
 # Evaluate google result files
@@ -140,9 +140,9 @@ for result_file in google:
     except:
         warnings.warn(f"Unhandled error when processing {result_file}, skipping")
         continue
-    if pathlib.Path('../evaluations_google.csv').is_file():
-        pre_existing_results = pd.read_csv("../evaluations_google.csv")
-        results = pd.concat([pre_existing_results, pd.DataFrame([measures])])
-    else:
-        results = pd.DataFrame([measures])
-    results.to_csv('../evaluations_google.csv', index=False)
+    results = pd.DataFrame([measures])
+    results.to_csv('../Evaluations/most_recent_run/evaluations_google.csv', index=False)
+    if pathlib.Path('../Evaluations/all_runs/evaluations_google.csv').is_file():
+        pre_existing_results = pd.read_csv("../Evaluations/all_runs/evaluations_google.csv")
+        results = pd.concat([pre_existing_results, results])
+    results.to_csv('../Evaluations/all_runs/evaluations_google.csv', index=False)
