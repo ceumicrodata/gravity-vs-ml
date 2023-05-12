@@ -48,6 +48,7 @@ trade = [f for f in result_files if 'trade' in f.lower()]
 # Evaluate trade result files
 trade_data = pd.read_csv("../Output_datasets/Yearly_trade_data_prediction/trade_edgelist.csv")
 trade_data = trade_data.rename(columns={"Value":"target", "Period":"year"})
+trade_results = []
 for result_file in trade:
     print(f'Processing {result_file}')
     results = pd.read_csv(result_file)
@@ -72,16 +73,18 @@ for result_file in trade:
         warnings.warn(f"Unhandled error when processing {result_file}, skipping")
         continue
     results = pd.DataFrame([measures])
-    results.to_csv('../Evaluations/most_recent_run/evaluations_trade.csv', index=False)
+    trade_results.append(results)
     if pathlib.Path('../Evaluations/all_runs/evaluations_trade.csv').is_file():
         pre_existing_results = pd.read_csv("../Evaluations/all_runs/evaluations_trade.csv")
         results = pd.concat([pre_existing_results, results])
     results.to_csv('../Evaluations/all_runs/evaluations_trade.csv', index=False)
+pd.concat(trade_results).to_csv('../Evaluations/most_recent_run/evaluations_trade.csv', index=False)
 
 
 # Evaluate geods result files
 geods_data = pd.read_csv("../Output_datasets/GeoDS_mobility_flow_prediction/edge_target_list.csv")
 geods_data = geods_data.rename(columns={"pop_flows":"target", "Timeline":"year"})
+geods_results = []
 for result_file in geods:
     print(f'Processing {result_file}')
     results = pd.read_csv(result_file)
@@ -106,17 +109,19 @@ for result_file in geods:
         warnings.warn(f"Unhandled error when processing {result_file}, skipping")
         continue
     results = pd.DataFrame([measures])
-    results.to_csv('../Evaluations/most_recent_run/evaluations_geods.csv', index=False)
+    geods_results.append(results)
     if pathlib.Path('../Evaluations/all_runs/evaluations_geods.csv').is_file():
         pre_existing_results = pd.read_csv("../Evaluations/all_runs/evaluations_geods.csv")
         results = pd.concat([pre_existing_results, results])
     results.to_csv('../Evaluations/all_runs/evaluations_geods.csv', index=False)
+pd.concat(geods_results).to_csv('../Evaluations/most_recent_run/evaluations_geods.csv', index=False)
 
 
 # Evaluate google result files
 google_data = pd.read_csv("../Output_datasets/Google_mobility_flow_prediction/node_target_list.csv")
 google_data = google_data.melt(id_vars = ['iso_3166_2_code','date','Timeline'], var_name='destination', value_name='target')
 google_data = google_data.rename(columns={"iso_3166_2_code":"origin", "Timeline":"year"})
+google_results = []
 for result_file in google:
     print(f'Processing {result_file}')
     results = pd.read_csv(result_file)
@@ -141,8 +146,9 @@ for result_file in google:
         warnings.warn(f"Unhandled error when processing {result_file}, skipping")
         continue
     results = pd.DataFrame([measures])
-    results.to_csv('../Evaluations/most_recent_run/evaluations_google.csv', index=False)
+    google_results.append(results)
     if pathlib.Path('../Evaluations/all_runs/evaluations_google.csv').is_file():
         pre_existing_results = pd.read_csv("../Evaluations/all_runs/evaluations_google.csv")
         results = pd.concat([pre_existing_results, results])
     results.to_csv('../Evaluations/all_runs/evaluations_google.csv', index=False)
+pd.concat(google_results).to_csv('../Evaluations/most_recent_run/evaluations_google.csv', index=False)
