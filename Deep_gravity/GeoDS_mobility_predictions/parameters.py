@@ -17,7 +17,7 @@ output_path = '../GeoDS_mobility_predictions/'
 # Node dataset
 node_id='iso_3166_2_code'
 node_timestamp=''
-node_features=['population_2019', 'population_density_2019',
+node_features=['population_2019', 'population_density_2019', 'Total_area',
                'residential_land_use_area', 'commercial_land_use_area',
                'industrial_land_use_area', 'retail_land_use_area', 'natural_land_use_area',
 	           'residential_roads_length', 'other_roads_length', 'main_roads_length',
@@ -35,8 +35,8 @@ flows_timestamp='Timeline'
 flows_features=['neighbouring', 'distances', 'visitor_flows']
 
 # Chunk parameters
-chunk_size = 50
-window_size = 10
+#chunk_size = 50
+#window_size = 10
 validation_period = 0.2 #10
 
 # Add lag parameters
@@ -88,11 +88,27 @@ config = {
 # Model params
 ##############
 
-max_epochs=1000
+#epochs=1000
 momentum=0.9
 seed=1234
 device='cpu'
 loss_fn = nn.MSELoss()
+
+#ASHAScheduler parameters
+max_epochs = 1000
+grace_period = 20
+reduction_factor = 2
+
+#Tune parameters
+resources_per_trial = 4
+num_samples = 8
+weight_decay = 0.01
+early_stopper_patience=10
+early_stopper_min_delta=2e+8
+early_stopper_grace_period = 40
+
+#Data_loader parameters
+data_loader_batch_size = 32
 
 # TBA add mode to only evaluate
 #mode='train'

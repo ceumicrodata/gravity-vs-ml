@@ -95,7 +95,10 @@ def train_and_validate_deepgravity(config,
                              validation_data_chunked,
                              chunk,
                              momentum,
-                             #epochs,
+                             weight_decay,
+                             early_stopper_patience,
+                             early_stopper_min_delta,
+                             early_stopper_grace_period,
                              loss_fn = None,
                              checkpoint_dir=None):
 
@@ -111,7 +114,7 @@ def train_and_validate_deepgravity(config,
                                     num_layers = config["num_layers"],)
 
     optimizer = optim.RMSprop(deep_gravity_model.parameters(), lr=config["lr"], momentum=momentum,
-    weight_decay=0.01)
+    weight_decay=weight_decay)
 
     if checkpoint_dir:
         model_state, optimizer_state = torch.load(
@@ -121,7 +124,7 @@ def train_and_validate_deepgravity(config,
 
     #val_losses = [np.exp(100), np.exp(100), np.exp(100)]
 
-    early_stopper = EarlyStopper(patience=10, min_delta=2e+8) #trade: min_delta=3e+17
+    early_stopper = EarlyStopper(patience=early_stopper_patience, min_delta=early_stopper_min_delta) #trade: min_delta=3e+17
 
     for epoch in range(config["epochs"]):
         #print(f"Epoch {epoch+1}\n-------------------------------")
@@ -135,7 +138,7 @@ def train_and_validate_deepgravity(config,
 
         tune.report(loss=val_loss)
 
-        if epoch>40:
+        if epoch>early_stopper_grace_period:
             if early_stopper.early_stop(val_loss):
                 break
 

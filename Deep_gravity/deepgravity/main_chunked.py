@@ -18,8 +18,16 @@ import model_utils
 from data_compiler import FlowDataset
 from deepgravity import DeepGravity
 
-sys.path.append('../GeoDS_mobility_predictions/')
-import parameters
+if sys.argv[1]=="GeoDS":
+    sys.path.append('../GeoDS_mobility_predictions/')
+    import parameters
+elif sys.argv[1]=="Google":
+    sys.path.append('../google_mobility_predictions/')
+    import parameters
+elif sys.argv[1]=="trade":
+    sys.path.append('../trade_predictions/')
+    import parameters
+
 
 # random seeds
 torch.manual_seed(parameters.seed)
@@ -29,8 +37,8 @@ random.seed(parameters.seed)
 torch_device = torch.device("cpu")
 
 if parameters.domain=='Google':
-    unit = [parameters.flow_origin, parameters.node_timestamp]
-    target_value = 'Value'
+    unit = ["index_aux", parameters.node_timestamp] #parameters.flow_origin
+    target_value = parameters.node_target
 else:
     unit = [parameters.flow_origin, parameters.flows_timestamp]
     target_value = parameters.flows_value
@@ -57,11 +65,8 @@ for chunk_file in tqdm.tqdm(all_files):
     nodes_edges = pd.read_csv(chunk_file, index_col=None, header=0, thousands=',')
     nodes_edges.drop(['date','start_date'], errors='ignore', axis=1, inplace=True)
 
-    ##############
-    # Initial cleaning
-    ##############
-    #nodes_edges = nodes_edges.fillna(0)
-
+    if parameters.domain=='Google':
+        nodes_edges["index_aux"] = "0"
     ##############
     # Create data objects
     ##############
@@ -77,7 +82,10 @@ for chunk_file in tqdm.tqdm(all_files):
     flow_chunk.add_target_values()
 
     # Create a list of FlowDataset objects
-    train_data, validation_data, train_validation_data, test_data = flow_chunk.split_train_validate_test_logs(validation_period = parameters.validation_period,columns_to_log=parameters.columns_to_log)
+    train_data, validation_data, train_validation_data, test_data = flow_chunk.split_train_validate_test_logs(
+        validation_period = parameters.validation_period,
+        columns_to_log=parameters.columns_to_log
+    )
     train_data_chunked.append(train_data)
     validation_data_chunked.append(validation_data)
     train_validation_data_chunked.append(train_validation_data)
@@ -94,8 +102,8 @@ for chunk in range(len(train_data_chunked)):
         metric="loss",
         mode="min",
         max_t=parameters.max_epochs,
-        grace_period=20,
-        reduction_factor=2)
+        grace_period=parameters.grace_period,
+        reduction_factor=parameters.reduction_factor)
     # Set reporter
     reporter = CLIReporter(
             # parameter_columns=["lr", "batch_size", "dim_hidden", "dropout_p", "num_layers"],
@@ -104,11 +112,13 @@ for chunk in range(len(train_data_chunked)):
     result = tune.run(
         tune.with_parameters(model_utils.train_and_validate_deepgravity, train_data_chunked = train_data_chunked,
                 validation_data_chunked = validation_data_chunked, chunk = chunk, momentum = parameters.momentum,
-                #epochs = parameters.epochs,
+                weight_decay=parameters.weight_decay, early_stopper_patience = parameters.early_stopper_patience,
+                early_stopper_min_delta = parameters.early_stopper_min_delta,
+                early_stopper_grace_period = parameters.early_stopper_grace_period,
                 loss_fn = parameters.loss_fn),
-        resources_per_trial={"cpu": 4},
+        resources_per_trial={"cpu": parameters.resources_per_trial},
         config=parameters.config,
-        num_samples=8,
+        num_samples=parameters.num_samples,
         scheduler=scheduler,
         progress_reporter=reporter,
         reuse_actors=False)
@@ -135,7 +145,7 @@ for chunk in range(len(train_data_chunked)):
     #    #print(f"Epoch {epoch+1}\n-------------------------------")
     #    model_utils.train_model(train_validation_data_loader, best_trained_model, optimizer, epoch, parameters.loss_fn)
 
-    test_data_loader = torch.utils.data.DataLoader(test_data_chunked[chunk], batch_size=32)
+    test_data_loader = torch.utils.data.DataLoader(test_data_chunked[chunk], batch_size=parameters.data_loader_batch_size)
     model_utils.test(test_data_loader, best_trained_model, test_data_chunked[chunk], loss_fn = parameters.loss_fn, store_predictions=True)
     print("Finished prediction on test set")
     prediction_list.append(test_data_chunked[chunk].compile_predictions(columns_to_rename = parameters.columns_to_rename))

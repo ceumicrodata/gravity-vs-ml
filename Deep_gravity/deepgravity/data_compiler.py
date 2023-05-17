@@ -101,18 +101,28 @@ class FlowDataset(torch.utils.data.Dataset):
                         node_columns: list,
                         periods: int =1) -> None:
 
-        node_columns = [i+'_o' for i in node_columns] + [i+'_d' for i in node_columns]
+        if self.domain!='Google':
+            node_columns = [i+'_o' for i in node_columns] + [i+'_d' for i in node_columns]
         data_dict = {}
         for id in self.id_list:
             for period in self.period_list[periods:]:
                 data = self.data_dict[(id, period)].copy()
                 for past_period in range(1,periods+1):
-                    data = pd.merge(data,
-                                    self.data_dict[(id, period-past_period)][edge_columns + node_columns
-                                                                            + [self.flow_destination]],
-                                    how = 'left',
-                                    on = [self.flow_destination],
-                                    suffixes=('', f'_{past_period}'))
+                    if self.domain!='Google':
+                        data = pd.merge(data,
+                                        self.data_dict[(id, period-past_period)][edge_columns + node_columns
+                                                                                + [self.flow_destination]],
+                                        how = 'left',
+                                        on = [self.flow_destination],
+                                        suffixes=('', f'_{past_period}'))
+                    else:
+                        data = pd.merge(data,
+                                        self.data_dict[(id, period-past_period)][edge_columns + node_columns
+                                                                                + [self.flow_destination,
+                                                                                self.flow_origin]],
+                                        how = 'left',
+                                        on = [self.flow_origin, self.flow_destination],
+                                        suffixes=('', f'_{past_period}'))
                 data_dict[(id, period)] = data
         self.data_dict = data_dict
         self._update_dict_attributes()
@@ -123,12 +133,20 @@ class FlowDataset(torch.utils.data.Dataset):
         for id in self.id_list:
             for period in self.period_list[:-1]:
                 data = self.data_dict[(id, period)].copy()
-                data = pd.merge(data,
-                                self.data_dict[(id, period+1)][[self.target_value, self.flow_destination]],
-                                how = 'left',
-                                on = [self.flow_destination],
-                                suffixes=('', '_target'))
-                data_dict[(id, period)] = data
+                if self.domain!='Google':
+                    data = pd.merge(data,
+                                    self.data_dict[(id, period+1)][[self.target_value, self.flow_destination]],
+                                    how = 'left',
+                                    on = [self.flow_destination],
+                                    suffixes=('', '_target'))
+                    data_dict[(id, period)] = data
+                else:
+                    data = pd.merge(data,
+                                    self.data_dict[(id, period+1)][[self.target_value, self.flow_origin, self.flow_destination]],
+                                    how = 'left',
+                                    on = [self.flow_origin, self.flow_destination],
+                                    suffixes=('', '_target'))
+                    data_dict[(id, period)] = data
             # Add last period with zero target values as test data
             data = self.data_dict[(id, self.period_list[-1])].copy()
             data[f'{self.target_value}_target'] = 0
@@ -236,14 +254,17 @@ class FlowDataset(torch.utils.data.Dataset):
             value[columns_to_log] = np.log1p(value[columns_to_log])
             test_data_transformed[key] = value
 
-        return FlowDataset(domain=self.domain, columns=self.columns, unit = [self.flow_origin, self.flows_timestamp], data_dict = train_data_transformed), \
-            FlowDataset(domain=self.domain, columns=self.columns, unit = [self.flow_origin, self.flows_timestamp], data_dict = validation_data_transformed), \
-            FlowDataset(domain=self.domain, columns=self.columns, unit = [self.flow_origin, self.flows_timestamp], data_dict = train_validation_data_transformed), \
-                FlowDataset(domain=self.domain, columns=self.columns, unit = [self.flow_origin, self.flows_timestamp], data_dict = test_data_transformed)
+        return FlowDataset(domain=self.domain, columns=self.columns, unit = self.unit, data_dict = train_data_transformed), \
+            FlowDataset(domain=self.domain, columns=self.columns, unit = self.unit, data_dict = validation_data_transformed), \
+            FlowDataset(domain=self.domain, columns=self.columns, unit = self.unit, data_dict = train_validation_data_transformed), \
+                FlowDataset(domain=self.domain, columns=self.columns, unit = self.unit, data_dict = test_data_transformed)
 
 
     def get_feature_dim(self) -> int:
-        return self.data_dict[self.data_dict_index_mapper[0]].shape[1] - 2
+        if self.domain!="Google":
+            return self.data_dict[self.data_dict_index_mapper[0]].shape[1] - 2
+        else:
+            return self.data_dict[self.data_dict_index_mapper[0]].shape[1] - 3
 
     #def get_features_labels(self) -> None:
 
@@ -252,7 +273,10 @@ class FlowDataset(torch.utils.data.Dataset):
         for key in self.data_dict.keys():
             predicted_data = self.data_dict[key][[self.flow_destination, self.target_value +'_target', 'prediction']].copy()
             predicted_data['Timestamp_target'] = key[1] + 1
-            predicted_data[self.flow_origin] = key[0]
+            if self.domain!="Google":
+                predicted_data[self.flow_origin] = key[0]
+            else:
+                predicted_data[self.flow_origin] = self.data_dict[key][self.flow_origin]
             prediction_list.append(predicted_data)
 
         predicted_data = pd.concat(prediction_list, axis=0)
@@ -264,9 +288,13 @@ class FlowDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, index: int) -> Tuple[Any, Any]:
         target = self.data_dict[self.data_dict_index_mapper[index]][self.target_value + '_target']
-        features = self.data_dict[self.data_dict_index_mapper[index]].drop(columns=[self.target_value + '_target',
-                                                                                    self.flow_destination], axis=1)
-
+        if self.domain!="Google":
+            features = self.data_dict[self.data_dict_index_mapper[index]].drop(columns=[self.target_value + '_target',
+                                                                                        self.flow_destination], axis=1)
+        else:
+            features = self.data_dict[self.data_dict_index_mapper[index]].drop(columns=[self.target_value + '_target',
+                                                                                        self.flow_destination,
+                                                                                        self.flow_origin], axis=1)
         target = torch.from_numpy(np.swapaxes(np.array([target]),0,1)).float()
         features = torch.from_numpy(np.array(features)).float()
 

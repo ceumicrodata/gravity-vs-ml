@@ -31,8 +31,8 @@ flows_features=['contig', 'comlang_off', 'comlang_ethno', 'colony',
                 'comcol', 'curcol', 'col45', 'smctry', 'dist', 'distcap', 'distw', 'distwces']
 
 # Chunk parameters
-chunk_size = 5
-window_size = 1
+#chunk_size = 5
+#window_size = 1
 validation_period = 0.2
 
 # Add lag parameters
@@ -77,11 +77,26 @@ config = {
 ##############
 
 #epochs=500
-max_epochs = 1000
-momentum=0.9
-seed=1234
-device='cpu'
+momentum = 0.9
+seed = 1234
+device = 'cpu'
 loss_fn = nn.MSELoss()
+
+#ASHAScheduler parameters
+max_epochs = 1000
+grace_period = 50
+reduction_factor = 2
+
+#Tune parameters
+resources_per_trial = 4
+num_samples = 8
+weight_decay = 0
+early_stopper_patience=10
+early_stopper_min_delta=3e+17 #2e+8 for GeoDS
+early_stopper_grace_period = 100
+
+#Data_loader parameters
+data_loader_batch_size = 32
 
 # TBA add mode to only evaluate
 #mode='train'
