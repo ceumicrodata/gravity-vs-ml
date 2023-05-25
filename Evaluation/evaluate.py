@@ -119,7 +119,7 @@ pd.concat(geods_results).to_csv('../Evaluations/most_recent_run/evaluations_geod
 
 # Evaluate google result files
 google_data = pd.read_csv("../Output_datasets/Google_mobility_flow_prediction/node_target_list.csv")
-google_data = google_data.rename(columns={"Timeline":"year"})
+google_data = google_data.rename(columns={"Timeline":"year", "Value": "target"})
 google_results = []
 for result_file in google:
     print(f'Processing {result_file}')
