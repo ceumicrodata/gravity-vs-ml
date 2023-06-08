@@ -22,7 +22,13 @@ node_features=['population_2019', 'population_density_2019', 'Total_Area',
 	           'residential_roads_length', 'other_roads_length', 'main_roads_length',
 		       'point_transport', 'building_transport', 'point_food', 'building_food',
 	           'point_health', 'building_health', 'point_education', 'building_education',
-               'point_retail', 'building_retail']
+               'point_retail', 'building_retail',
+               'retail_and_recreation_percent_change_from_baseline',
+               'grocery_and_pharmacy_percent_change_from_baseline',
+               'parks_percent_change_from_baseline',
+               'transit_stations_percent_change_from_baseline',
+               'workplaces_percent_change_from_baseline',
+               'residential_percent_change_from_baseline']
 
 #node_targets = ['retail_and_recreation_percent_change_from_baseline', 'grocery_and_pharmacy_percent_change_from_baseline',
 #               'parks_percent_change_from_baseline', 'transit_stations_percent_change_from_baseline',
@@ -57,7 +63,13 @@ columns_to_log = ['population_2019', 'population_density_2019', 'Total_Area',
 	           'residential_roads_length', 'other_roads_length', 'main_roads_length',
 		       'point_transport', 'building_transport', 'point_food', 'building_food',
 	           'point_health', 'building_health', 'point_education', 'building_education',
-               'point_retail', 'building_retail']
+               'point_retail', 'building_retail',
+               'retail_and_recreation_percent_change_from_baseline',
+               'grocery_and_pharmacy_percent_change_from_baseline',
+               'parks_percent_change_from_baseline',
+               'transit_stations_percent_change_from_baseline',
+               'workplaces_percent_change_from_baseline',
+               'residential_percent_change_from_baseline']
 
 ##############
 # Global settings
@@ -75,7 +87,7 @@ config = {
         "batch_size": 32, #tune.choice([2, 4, 8, 16]),
         "dim_hidden": tune.sample_from(lambda _: 2**np.random.randint(3, 5)), #tune.sample_from(lambda _: 2**np.random.randint(2, 6)),
         "dropout_p": tune.choice([0.02, 0.05]), #tune.choice([0.25, 0.35, 0.45]),
-        "num_layers": tune.choice([5, 10, 15]), #5
+        "num_layers": 5, #tune.choice([5, 10, 15]),
         "epochs": 1000, #tune.choice([500, 1000]),
         #"loss_fn": tune.choice([nn.L1Loss(), nn.MSELoss()])
     }
@@ -92,7 +104,7 @@ loss_fn = nn.MSELoss()
 
 #ASHAScheduler parameters
 max_epochs = 1000
-grace_period = 20
+grace_period = 50
 reduction_factor = 2
 
 #Tune parameters
@@ -101,7 +113,7 @@ num_samples = 8
 weight_decay = 0.01
 early_stopper_patience=10
 early_stopper_min_delta=20 #2e+8 for GeoDS
-early_stopper_grace_period = 40
+early_stopper_grace_period = 100
 
 #Data_loader parameters
 data_loader_batch_size = 32
