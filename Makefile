@@ -4,7 +4,7 @@ STATA := stata -b
 
 .INTERMEDIATE: pred_%.csv
 
-Gravity_model/prediction.csv: $(foreach chunk,$(CHUNKS),Gravity_model/pred_$(chunk).csv)
+Gravity_model/trade_prediction.csv: $(foreach chunk,$(CHUNKS),Gravity_model/pred_$(chunk).csv)
 	head -n1 $< > $@
 	tail -n+2 -q $^ >> $@
 Gravity_model/pred_%.csv: Gravity_model/estimate_poisson.do $(DATA)/%.csv
