@@ -4,13 +4,15 @@ import pandas as pd
 import warnings
 import git
 
+def bias(predictions: pd.Series, targets: pd.Series) -> float:
+    return float(np.mean(np.array(predictions-targets, dtype=float)))
 
 def mae(predictions: pd.Series, targets: pd.Series) -> float:
-    return float(np.mean(np.abs(predictions-targets)))
+    return float(np.mean(np.abs(np.array(predictions-targets, dtype=float))))
 
 
 def mse(predictions: pd.Series, targets: pd.Series) -> float:
-    return float(np.mean((predictions-targets)**2))
+    return float(np.mean(np.array(predictions-targets, dtype=float)**2))
 
 
 def rmse(predictions: pd.Series, targets: pd.Series) -> float:
@@ -23,8 +25,14 @@ def rmae(predictions: pd.Series, targets: pd.Series) -> float:
 
 def r2(predictions: pd.Series, targets: pd.Series) -> float:
     y_mean = np.mean(targets)
-    sst = np.sum((targets-y_mean)**2)
-    ssr = np.sum((targets-predictions)**2)
+    sst = np.sum(np.array(targets-y_mean, dtype=float)**2)
+    ssr = np.sum(np.array(targets-predictions, dtype=float)**2)
+    return 1-ssr/sst
+
+def within_r2(df: pd.DataFrame, group=['origin', 'destination']) -> float:
+    group_mean = df.groupby(group)['target'].transform('mean')
+    sst = np.sum(np.array(df['target']-group_mean, dtype=float)**2)
+    ssr = np.sum(np.array(df['target']-df['prediction'], dtype=float)**2)
     return 1-ssr/sst
 
 def cpc(predictions: pd.Series, targets: pd.Series) -> float:
@@ -36,7 +44,7 @@ project_home = pathlib.Path("../")
 result_files = list(str(x) for x in project_home.rglob('*') if 'prediction' in str(x).split("/")[-1] and '.csv' in str(x))
 print(f"Found {len(result_files)} model result file(s):\n",*[f"{x}\n" for x in result_files])
 
-measure_names = ["MAE", "RMAE", "MSE", "RMSE", "PSEUDOR2", "CommonPartOfCommuters"]
+measure_names = ["PSEUDO R2", "BIAS", "MAE", "RMAE", "CommonPartOfCommuters", "Within R2"]
 repo = git.Repo(search_parent_directories=True)
 sha = repo.head.object.hexsha
 
@@ -49,6 +57,7 @@ trade = [f for f in result_files if 'trade' in f.lower()]
 trade_data = pd.read_csv("../Output_datasets/Yearly_trade_data_prediction/trade_edgelist.csv")
 trade_data = trade_data.rename(columns={"Value":"target", "Period":"year"})
 trade_results = []
+trade_yearly_results = []
 for result_file in trade:
     print(f'Processing {result_file}')
     results = pd.read_csv(result_file)
@@ -61,30 +70,45 @@ for result_file in trade:
     if not results.year.nunique()==20 or results.year.astype(int).min()!=2000 or results.year.astype(int).max()!=2019 or results.year.value_counts().nunique()!=1:
         warnings.warn(f'{result_file} has incorrect years')
         continue
+    results = results[[col for col in results if col!='target']].merge(trade_data[['year', 'iso_o', 'iso_d', 'target']], how='left')
+    assert results.shape[0]==146200
+    predictions = results.prediction
+    targets = results.target
     try:
-        results = results[[col for col in results if col!='target']].merge(trade_data[['year', 'iso_o', 'iso_d', 'target']], how='left')
-        assert results.shape[0]==146200
-        predictions = results.prediction
-        targets = results.target
-        measures = dict(zip(measure_names,(mae(predictions,targets), rmae(predictions,targets), mse(predictions, targets), rmse(predictions, targets), r2(predictions, targets), cpc(predictions,targets))))
+        measures = dict(zip(measure_names,(r2(predictions,targets), bias(predictions,targets),
+                                            mae(predictions,targets),
+                                            rmae(predictions, targets), cpc(predictions,targets),
+                                            within_r2(results, ['iso_o', 'iso_d']))))
         measures['sha'] = sha
         measures['path'] = result_file
+        for year in results['year'].unique():
+            predictions = results[results.year==year].prediction
+            targets = results[results.year==year].target
+            measures_yearly = dict(zip(measure_names,(r2(predictions,targets), bias(predictions,targets), mae(predictions,
+                                                                                        targets), rmae(predictions, targets), cpc(predictions,targets))))
+            measures_yearly['sha'] = sha
+            measures_yearly['year'] = year
+            measures_yearly['path'] = result_file
+            trade_yearly_results.append(pd.DataFrame([measures_yearly]))
     except:
         warnings.warn(f"Unhandled error when processing {result_file}, skipping")
         continue
     results = pd.DataFrame([measures])
+    print(results)
     trade_results.append(results)
     if pathlib.Path('../Evaluations/all_runs/evaluations_trade.csv').is_file():
         pre_existing_results = pd.read_csv("../Evaluations/all_runs/evaluations_trade.csv")
         results = pd.concat([pre_existing_results, results])
     results.to_csv('../Evaluations/all_runs/evaluations_trade.csv', index=False)
 pd.concat(trade_results).to_csv('../Evaluations/most_recent_run/evaluations_trade.csv', index=False)
+pd.concat(trade_yearly_results).to_csv('../Evaluations/most_recent_run/evaluations_trade_yearly.csv', index=False)
 
 
 # Evaluate geods result files
 geods_data = pd.read_csv("../Output_datasets/GeoDS_mobility_flow_prediction/edge_target_list.csv")
 geods_data = geods_data.rename(columns={"pop_flows":"target", "Timeline":"year"})
 geods_results = []
+geods_yearly_results = []
 for result_file in geods:
     print(f'Processing {result_file}')
     results = pd.read_csv(result_file)
@@ -102,9 +126,20 @@ for result_file in geods:
         assert results.shape[0]==24816
         predictions = results.prediction
         targets = results.target
-        measures = dict(zip(measure_names,(mae(predictions,targets), rmae(predictions,targets), mse(predictions, targets), rmse(predictions, targets), r2(predictions, targets), cpc(predictions,targets))))
+        measures = dict(zip(measure_names,(r2(predictions,targets), bias(predictions,targets), mae(predictions,targets),
+                                           rmae(predictions, targets), cpc(predictions,targets),
+                                           within_r2(results))))
         measures['sha'] = sha
         measures['path'] = result_file
+        for year in results['year'].unique():
+            predictions = results[results.year==year].prediction
+            targets = results[results.year==year].target
+            measures_yearly = dict(zip(measure_names,(r2(predictions,targets), bias(predictions,targets), mae(predictions,
+                                                                                     targets), rmae(predictions, targets), cpc(predictions,targets))))
+            measures_yearly['sha'] = sha
+            measures_yearly['year'] = year
+            measures_yearly['path'] = result_file
+            geods_yearly_results.append(pd.DataFrame([measures_yearly]))
     except:
         warnings.warn(f"Unhandled error when processing {result_file}, skipping")
         continue
@@ -115,12 +150,13 @@ for result_file in geods:
         results = pd.concat([pre_existing_results, results])
     results.to_csv('../Evaluations/all_runs/evaluations_geods.csv', index=False)
 pd.concat(geods_results).to_csv('../Evaluations/most_recent_run/evaluations_geods.csv', index=False)
-
+pd.concat(geods_yearly_results).to_csv('../Evaluations/most_recent_run/evaluations_geods_yearly.csv', index=False)
 
 # Evaluate google result files
 google_data = pd.read_csv("../Output_datasets/Google_mobility_flow_prediction/node_target_list.csv")
 google_data = google_data.rename(columns={"Timeline":"year", "Value": "target"})
 google_results = []
+google_yearly_results = []
 for result_file in google:
     print(f'Processing {result_file}')
     results = pd.read_csv(result_file)
@@ -136,11 +172,25 @@ for result_file in google:
     try:
         results = results[[col for col in results if col!='target']].merge(google_data[['year', 'origin', 'destination', 'target']], how='left')
         assert results.shape[0]==3744
+        # add 100 to both target and results so that RMAE is calculated correctly
+        results['target'] = results['target']+100
+        results['prediction'] = results['prediction']+100
         predictions = results.prediction
         targets = results.target
-        measures = dict(zip(measure_names,(mae(predictions,targets), rmae(predictions,targets), mse(predictions, targets), rmse(predictions, targets), r2(predictions, targets), cpc(predictions,targets))))
+        measures = dict(zip(measure_names,(r2(predictions,targets), bias(predictions,targets), mae(predictions,targets),
+                                           rmae(predictions, targets), cpc(predictions,targets),
+                                           within_r2(results))))
         measures['sha'] = sha
         measures['path'] = result_file
+        for year in results['year'].unique():
+            predictions = results[results.year==year].prediction
+            targets = results[results.year==year].target
+            measures_yearly = dict(zip(measure_names,(r2(predictions,targets), bias(predictions,targets), mae(predictions,
+                                                                                     targets), rmae(predictions, targets), cpc(predictions,targets))))
+            measures_yearly['sha'] = sha
+            measures_yearly['year'] = year
+            measures_yearly['path'] = result_file
+            google_yearly_results.append(pd.DataFrame([measures_yearly]))
     except:
         warnings.warn(f"Unhandled error when processing {result_file}, skipping")
         continue
@@ -151,3 +201,4 @@ for result_file in google:
         results = pd.concat([pre_existing_results, results])
     results.to_csv('../Evaluations/all_runs/evaluations_google.csv', index=False)
 pd.concat(google_results).to_csv('../Evaluations/most_recent_run/evaluations_google.csv', index=False)
+pd.concat(google_yearly_results).to_csv('../Evaluations/most_recent_run/evaluations_google_yearly.csv', index=False)
