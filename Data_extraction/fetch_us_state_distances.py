@@ -17,10 +17,10 @@ def get_coordinates(state_name):
     
 tqdm.pandas()
 
-
-df = pd.read_csv("data/2022_US_Region_Mobility_Report.csv")
+# Google mobility report downloaded from https://www.google.com/covid19/mobility/
+df = pd.read_csv("../Input_datasets/Google_mobility_flow_prediction/Large_files/2022_US_Region_Mobility_Report.csv")
 states = df[['sub_region_1','iso_3166_2_code']].dropna().drop_duplicates()
 states['coordinate'] = states['iso_3166_2_code'].progress_map(lambda state: get_coordinates(state))
 cross_joined = states[['iso_3166_2_code','coordinate']].merge(states[['iso_3166_2_code','coordinate']], how='cross')
 cross_joined['distance'] = cross_joined.apply(lambda r: haversine(r.coordinate_x, r.coordinate_y), axis=1)
-cross_joined[['iso_3166_2_code_x','iso_3166_2_code_y','distance']].set_index(['iso_3166_2_code_x','iso_3166_2_code_y']).unstack().to_csv("US_state_adjacency.csv")
+cross_joined[['iso_3166_2_code_x','iso_3166_2_code_y','distance']].set_index(['iso_3166_2_code_x','iso_3166_2_code_y']).unstack().to_csv("../Input_datasets/Mobility_flow_prediction_shared/US_state_distances.csv")
