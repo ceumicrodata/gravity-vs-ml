@@ -1,10 +1,10 @@
 [tool.poetry]
-name = "gnn-chapter"
+name = "gravity-vs-ml"
 version = "0.1.0"
-description = ""
-authors = ["Your Name <you@example.com>"]
+description = "Package for chapter 'Can Machine Learning Beat Gravity in Flow Prediction?'"
+authors = ["György Ruzicska <ruzicska.gyorgy@gmail.com>"]
 readme = "README.md"
-packages = [{include = "gnn_chapter"}]
+packages = []
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -16,7 +16,13 @@ tqdm = "^4.65.0"
 networkx = "^3.0"
 jupyter = "^1.0.0"
 gitpython = "^3.1.31"
-plotly = "^5.14.0"
+requests = "^2.31.0"
+retrying = "^1.3.4"
+python-dotenv = "^1.0.1"
+geopy = "^2.4.1"
+haversine = "^2.8.1"
+wbgapi = "^1.0.12"
+area = "^1.1.1"
 
 
 [build-system]
