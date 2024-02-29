@@ -57,7 +57,6 @@ trade = [f for f in result_files if 'trade' in f.lower()]
 trade_data = pd.read_csv("../Output_datasets/Yearly_trade_data_prediction/trade_edgelist.csv")
 trade_data = trade_data.rename(columns={"Value":"target", "Period":"year"})
 trade_results = []
-trade_yearly_results = []
 for result_file in trade:
     print(f'Processing {result_file}')
     results = pd.read_csv(result_file)
@@ -81,15 +80,6 @@ for result_file in trade:
                                             within_r2(results, ['iso_o', 'iso_d']))))
         measures['sha'] = sha
         measures['path'] = result_file
-        for year in results['year'].unique():
-            predictions = results[results.year==year].prediction
-            targets = results[results.year==year].target
-            measures_yearly = dict(zip(measure_names,(r2(predictions,targets), bias(predictions,targets), mae(predictions,
-                                                                                        targets), rmae(predictions, targets), cpc(predictions,targets))))
-            measures_yearly['sha'] = sha
-            measures_yearly['year'] = year
-            measures_yearly['path'] = result_file
-            trade_yearly_results.append(pd.DataFrame([measures_yearly]))
     except:
         warnings.warn(f"Unhandled error when processing {result_file}, skipping")
         continue
@@ -101,14 +91,11 @@ for result_file in trade:
         results = pd.concat([pre_existing_results, results])
     results.to_csv('../Evaluations/all_runs/evaluations_trade.csv', index=False)
 pd.concat(trade_results).to_csv('../Evaluations/most_recent_run/evaluations_trade.csv', index=False)
-pd.concat(trade_yearly_results).to_csv('../Evaluations/most_recent_run/evaluations_trade_yearly.csv', index=False)
-
 
 # Evaluate geods result files
 geods_data = pd.read_csv("../Output_datasets/GeoDS_mobility_flow_prediction/edge_target_list.csv")
 geods_data = geods_data.rename(columns={"pop_flows":"target", "Timeline":"year"})
 geods_results = []
-geods_yearly_results = []
 for result_file in geods:
     print(f'Processing {result_file}')
     results = pd.read_csv(result_file)
@@ -131,15 +118,6 @@ for result_file in geods:
                                            within_r2(results))))
         measures['sha'] = sha
         measures['path'] = result_file
-        for year in results['year'].unique():
-            predictions = results[results.year==year].prediction
-            targets = results[results.year==year].target
-            measures_yearly = dict(zip(measure_names,(r2(predictions,targets), bias(predictions,targets), mae(predictions,
-                                                                                     targets), rmae(predictions, targets), cpc(predictions,targets))))
-            measures_yearly['sha'] = sha
-            measures_yearly['year'] = year
-            measures_yearly['path'] = result_file
-            geods_yearly_results.append(pd.DataFrame([measures_yearly]))
     except:
         warnings.warn(f"Unhandled error when processing {result_file}, skipping")
         continue
@@ -150,13 +128,11 @@ for result_file in geods:
         results = pd.concat([pre_existing_results, results])
     results.to_csv('../Evaluations/all_runs/evaluations_geods.csv', index=False)
 pd.concat(geods_results).to_csv('../Evaluations/most_recent_run/evaluations_geods.csv', index=False)
-pd.concat(geods_yearly_results).to_csv('../Evaluations/most_recent_run/evaluations_geods_yearly.csv', index=False)
 
 # Evaluate google result files
 google_data = pd.read_csv("../Output_datasets/Google_mobility_flow_prediction/node_target_list.csv")
 google_data = google_data.rename(columns={"Timeline":"year", "Value": "target"})
 google_results = []
-google_yearly_results = []
 for result_file in google:
     print(f'Processing {result_file}')
     results = pd.read_csv(result_file)
@@ -182,15 +158,6 @@ for result_file in google:
                                            within_r2(results))))
         measures['sha'] = sha
         measures['path'] = result_file
-        for year in results['year'].unique():
-            predictions = results[results.year==year].prediction
-            targets = results[results.year==year].target
-            measures_yearly = dict(zip(measure_names,(r2(predictions,targets), bias(predictions,targets), mae(predictions,
-                                                                                     targets), rmae(predictions, targets), cpc(predictions,targets))))
-            measures_yearly['sha'] = sha
-            measures_yearly['year'] = year
-            measures_yearly['path'] = result_file
-            google_yearly_results.append(pd.DataFrame([measures_yearly]))
     except:
         warnings.warn(f"Unhandled error when processing {result_file}, skipping")
         continue
@@ -201,4 +168,3 @@ for result_file in google:
         results = pd.concat([pre_existing_results, results])
     results.to_csv('../Evaluations/all_runs/evaluations_google.csv', index=False)
 pd.concat(google_results).to_csv('../Evaluations/most_recent_run/evaluations_google.csv', index=False)
-pd.concat(google_yearly_results).to_csv('../Evaluations/most_recent_run/evaluations_google_yearly.csv', index=False)
